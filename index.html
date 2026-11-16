@@ -1,0 +1,2253 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Carnet Stéphane - AgendaEnseignant</title>
+ <style>
+ :root {
+ --primary: #312e81;
+ --primary-light: #4338ca;
+ --accent: #d97706;
+ --bg: #f8fafc;
+ --card-bg: #ffffff;
+ --border: #e2e8f0;
+ --text: #1e293b;
+ --text-muted: #64748b;
+ }
+
+ * {
+ box-sizing: border-box;
+ margin: 0;
+ padding: 0;
+ }
+
+ input, select, textarea, button { font-family: inherit; }
+
+ body {
+ font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+ background-color: var(--bg);
+ color: var(--text);
+ min-height: 100vh;
+ display: flex;
+ flex-direction: column;
+ font-size: 1.15rem;
+ }
+
+ header {
+ background-color: var(--primary);
+ color: white;
+ position: sticky;
+ top: 0;
+ z-index: 30;
+ box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+ }
+
+ .header-container {
+ max-width: 1400px;
+ margin: 0 auto;
+ padding: 1rem 1.25rem;
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ }
+
+ .brand {
+ display: flex;
+ align-items: center;
+ gap: 0.75rem;
+ font-size: 1.5rem;
+ font-weight: bold;
+ }
+
+ .btn-sync {
+ background-color: #3730a3;
+ color: #fde68a;
+ border: 1px solid #4338ca;
+ padding: 0.75rem 1.25rem;
+ border-radius: 0.5rem;
+ font-size: 1.1rem;
+ font-weight: 600;
+ cursor: pointer;
+ transition: background-color 0.2s;
+ }
+
+ .btn-sync:hover {
+ background-color: #4338ca;
+ }
+
+ nav {
+ background-color: white;
+ border-bottom: 1px solid var(--border);
+ display: flex;
+ justify-content: center;
+ gap: 0.75rem;
+ overflow-x: auto;
+ }
+
+ .nav-tab {
+ padding: 1rem 1.25rem;
+ border: none;
+ background: none;
+ color: var(--text-muted);
+ font-size: 1.15rem;
+ font-weight: 500;
+ cursor: pointer;
+ border-bottom: 3px solid transparent;
+ white-space: nowrap;
+ transition: color 0.2s, border-color 0.2s;
+ }
+
+ .nav-tab.active-tab {
+ border-bottom-color: var(--primary-light);
+ color: var(--primary-light);
+ font-weight: 700;
+ }
+
+ main {
+ flex-grow: 1;
+ max-width: 1400px;
+ width: 100%;
+ margin: 0 auto;
+ padding: 2rem 1rem;
+ }
+
+ .section {
+ display: none;
+ flex-direction: column;
+ gap: 1.5rem;
+ }
+
+ .section.active {
+ display: flex;
+ }
+
+ .card {
+ background-color: var(--card-bg);
+ border: 1px solid var(--border);
+ border-radius: 0.75rem;
+ padding: 1.5rem;
+ box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+ }
+
+ .grid-3 {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+ gap: 1.5rem;
+ }
+
+ .grid-week {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+ gap: 1rem;
+ }
+
+ input, select, textarea, button {
+ font-size: 1.1rem;
+ }
+
+ .form-control {
+ width: 100%;
+ padding: 0.75rem 1rem;
+ border: 1px solid var(--border);
+ border-radius: 0.5rem;
+ outline: none;
+ margin-top: 0.35rem;
+ font-size: 1.1rem;
+ background: #ffffff;
+ color: var(--text);
+ }
+
+ .form-control:focus {
+ border-color: var(--primary-light);
+ box-shadow: 0 0 0 2px rgba(67, 56, 202, 0.15);
+ }
+
+ .btn {
+ padding: 0.75rem 1.25rem;
+ border-radius: 0.5rem;
+ border: none;
+ font-weight: 600;
+ cursor: pointer;
+ transition: opacity 0.2s;
+ display: inline-flex;
+ align-items: center;
+ gap: 0.5rem;
+ font-size: 1.1rem;
+ }
+
+ .btn:hover {
+ opacity: 0.9;
+ }
+
+ .btn-primary { background-color: var(--primary-light); color: white; }
+ .btn-success { background-color: #059669; color: white; }
+ .btn-secondary { background-color: #f1f5f9; color: var(--text); border: 1px solid var(--border); }
+ .btn-danger { background-color: #e11d48; color: white; }
+ .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.95rem; }
+
+ .btn-icon-order {
+ padding: 0.25rem 0.5rem;
+ font-size: 0.9rem;
+ background: #f1f5f9;
+ border: 1px solid var(--border);
+ border-radius: 0.25rem;
+ cursor: pointer;
+ }
+ .btn-icon-order:hover {
+ background: #e2e8f0;
+ }
+
+ .session-card {
+ background-color: #f8fafc;
+ border: 1px solid var(--border);
+ border-left-width: 6px;
+ border-radius: 0 0.5rem 0.5rem 0;
+ padding: 1.25rem;
+ margin-bottom: 0.85rem;
+ display: flex;
+ flex-direction: column;
+ gap: 0.75rem;
+ cursor: pointer;
+ transition: transform 0.1s, box-shadow 0.1s;
+ }
+
+ .session-card:hover {
+ transform: translateY(-1px);
+ box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+ }
+
+ .session-header {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ }
+
+ .badge-class {
+ padding: 0.25rem 0.75rem;
+ border-radius: 0.25rem;
+ color: white;
+ font-weight: bold;
+ font-size: 0.95rem;
+ }
+
+ .badge-subitems {
+ display: inline-block;
+ background-color: #e0e7ff;
+ color: #3730a3;
+ font-size: 0.95rem;
+ font-weight: 700;
+ padding: 0.15rem 0.55rem;
+ border-radius: 0.35rem;
+ margin-left: 0.5rem;
+ border: 1px solid #c7d2fe;
+ }
+
+ .range-select-compact {
+ padding: 0.35rem 0.5rem;
+ border: 1px solid #cbd5e1;
+ border-radius: 0.4rem;
+ background-color: #f8fafc;
+ font-size: 1rem;
+ font-weight: 600;
+ color: var(--primary);
+ cursor: pointer;
+ }
+
+ .range-select-compact:focus {
+ border-color: var(--primary-light);
+ outline: none;
+ }
+
+ .fs-line-row {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ gap: 1rem;
+ padding: 0.65rem 0.75rem;
+ border-radius: 0.5rem;
+ background: #f8fafc;
+ border: 1px solid var(--border);
+ margin-bottom: 0.65rem;
+ flex-wrap: wrap;
+ }
+
+ .time-text {
+ font-size: 0.95rem;
+ color: var(--text-muted);
+ font-weight: 600;
+ }
+
+ /* GANTT STYLES */
+ .gantt-wrapper {
+ display: block;
+ width: 100%;
+ overflow-x: auto;
+ overflow-y: visible;
+ border: 1px solid #cbd5e1;
+ border-radius: 0.5rem;
+ background-color: #ffffff;
+ margin-top: 1rem;
+ -webkit-overflow-scrolling: touch;
+ transform: translateZ(0);
+ }
+
+ .gantt-table {
+ border-collapse: separate;
+ border-spacing: 0;
+ table-layout: fixed;
+ width: max-content;
+ font-size: 0.85rem;
+ background-color: #ffffff;
+ }
+
+ .gantt-table th, .gantt-table td {
+ border-right: 1px solid #cbd5e1;
+ border-bottom: 1px solid #cbd5e1;
+ padding: 0;
+ text-align: center;
+ vertical-align: middle;
+ background-color: #ffffff;
+ box-sizing: border-box;
+ }
+
+ .gantt-table th {
+ background-color: #f1f5f9;
+ color: var(--text);
+ padding: 0.35rem 0.25rem;
+ font-weight: 600;
+ }
+
+ .gantt-sticky-col {
+ position: sticky;
+ left: 0;
+ background-color: #ffffff !important;
+ z-index: 10;
+ width: 310px;
+ min-width: 310px;
+ max-width: 310px;
+ padding: 0.5rem 0.75rem !important;
+ text-align: left !important;
+ border-right: 2px solid #94a3b8 !important;
+ }
+
+ .gantt-header-sticky {
+ position: sticky;
+ left: 0;
+ background-color: #f1f5f9 !important;
+ z-index: 20;
+ width: 310px;
+ min-width: 310px;
+ max-width: 310px;
+ padding: 0.5rem 0.75rem !important;
+ text-align: left !important;
+ border-right: 2px solid #94a3b8 !important;
+ }
+
+ .gantt-day-col {
+ width: 34px;
+ min-width: 34px;
+ max-width: 34px;
+ height: 46px;
+ }
+
+ .gantt-weekend-col {
+ background-color: #f1f5f9 !important;
+ color: #94a3b8;
+ }
+
+ .gantt-holiday-col {
+ background-color: #e2e8f0 !important;
+ color: #64748b;
+ }
+
+ .gantt-active-bar {
+ background-color: #4338ca !important;
+ color: #ffffff;
+ font-weight: bold;
+ }
+
+ .gantt-today-col {
+ box-shadow: inset 0 0 0 2px #dc2626 !important;
+ }
+
+ .gantt-eval-badge {
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ width: 22px;
+ height: 22px;
+ background-color: #ffffff;
+ color: #dc2626;
+ border: 2px solid #dc2626;
+ border-radius: 50%;
+ font-weight: 900;
+ font-size: 0.85rem;
+ line-height: 1;
+ }
+
+ .gantt-milestone-icon {
+ display: inline-block;
+ color: #d97706;
+ font-size: 1.25rem;
+ line-height: 1;
+ }
+
+ .modal-overlay {
+ position: fixed;
+ top: 0; left: 0; right: 0; bottom: 0;
+ background: rgba(15, 23, 42, 0.5);
+ backdrop-filter: blur(4px);
+ display: none;
+ justify-content: center;
+ align-items: center;
+ padding: 1rem;
+ z-index: 50;
+ }
+
+ .modal-overlay.open {
+ display: flex;
+ }
+
+ .modal-card {
+ background: white;
+ border-radius: 0.75rem;
+ max-width: 650px;
+ width: 100%;
+ padding: 2rem;
+ box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+ display: flex;
+ flex-direction: column;
+ gap: 1.25rem;
+ max-height: 90vh;
+ overflow-y: auto;
+ }
+
+ .modal-card.modal-wide {
+ max-width: 1050px;
+ }
+
+ .session-modal-layout {
+ display: grid;
+ grid-template-columns: 1.35fr 1fr;
+ gap: 1.5rem;
+ align-items: start;
+ }
+
+ @media (max-width: 768px) {
+ .session-modal-layout {
+ grid-template-columns: 1fr;
+ }
+ }
+
+ .textbook-sidebar-box {
+ background: #f8fafc;
+ border: 1px solid #cbd5e1;
+ border-left: 5px solid var(--primary-light);
+ border-radius: 0.5rem;
+ padding: 1.25rem;
+ display: flex;
+ flex-direction: column;
+ gap: 0.75rem;
+ }
+
+ .modal-fullscreen {
+ position: fixed;
+ top: 0; left: 0; right: 0; bottom: 0;
+ background: #ffffff;
+ z-index: 100;
+ display: none;
+ flex-direction: column;
+ overflow-y: auto;
+ }
+
+ .modal-fullscreen.open {
+ display: flex;
+ }
+
+ .modal-header {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ border-bottom: 1px solid var(--border);
+ padding-bottom: 1rem;
+ }
+
+ .close-btn {
+ background: none;
+ border: none;
+ font-size: 1.75rem;
+ cursor: pointer;
+ color: var(--text-muted);
+ }
+
+ @media print {
+ header, nav, .modal-overlay, .modal-fullscreen, .no-print {
+ display: none !important;
+ }
+ body, main {
+ background-color: white !important;
+ color: black !important;
+ padding: 0 !important;
+ margin: 0 !important;
+ width: 100% !important;
+ max-width: 100% !important;
+ }
+ .section { display: none !important; }
+ #sec-agenda { display: flex !important; }
+ @page { size: A4 portrait; margin: 1cm; }
+ }
+ </style>
+</head>
+<body>
+
+ <!-- Header & Navigation -->
+ <header>
+ <div class="header-container">
+ <div class="brand">
+ <span>🎓</span>
+ <span>Carnet Stéphane - AgendaEnseignant</span>
+ </div>
+ <button onclick="openSyncModal()" class="btn-sync">
+ ☁️ Sync Google Drive
+ </button>
+ </div>
+
+ <nav>
+ <button onclick="switchTab('agenda')" id="tab-agenda" class="nav-tab active-tab">📅 Agenda</button>
+ <button onclick="switchTab('textbook')" id="tab-textbook" class="nav-tab">📖 Cahier de texte</button>
+ <button onclick="switchTab('gantt')" id="tab-gantt" class="nav-tab">📊 Gantt</button>
+ <button onclick="switchTab('classes')" id="tab-classes" class="nav-tab">👥 Classes</button>
+ <button onclick="switchTab('template')" id="tab-template" class="nav-tab">📋 Agenda type</button>
+ </nav>
+ </header>
+
+ <!-- Main Content -->
+ <main>
+
+ <!-- 1. AGENDA -->
+ <section id="sec-agenda" class="section active">
+ <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+ <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+ <div style="display: flex; align-items: center; gap: 0.35rem;">
+ <button onclick="changeAgendaDate(-1)" class="btn btn-secondary">◀</button>
+ <input type="date" id="agenda-date-picker" onchange="renderAgenda()" class="form-control" style="width: auto;">
+ <button onclick="changeAgendaDate(1)" class="btn btn-secondary">▶</button>
+ </div>
+ <button onclick="setAgendaDateToToday()" class="btn btn-secondary btn-sm">Aujourd'hui</button>
+ 
+<div style="margin-left: 0.5rem; border-left: 1px solid var(--border); padding-left: 0.75rem; display: flex; gap: 0.35rem;">
+ <button id="btn-view-day" onclick="setAgendaView('day')" class="btn btn-primary btn-sm">Vue Jour</button>
+ <button id="btn-view-week" onclick="setAgendaView('week')" class="btn btn-secondary btn-sm">Vue Semaine</button>
+ </div>
+ 
+<button onclick="printAgenda()" class="btn btn-secondary btn-sm" style="margin-left: 0.5rem;">🖨️ Imprimer A4</button>
+ </div>
+ <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+ <button onclick="importCurrentWeekTemplateFromAgenda()" class="btn btn-success btn-sm" title="Importer automatiquement le modèle Paire ou Impaire selon le numéro de semaine affiché">📥 Importer semaine type</button>
+ <button onclick="openAddSessionModal()" class="btn btn-primary">+ Ajouter une séance</button>
+ </div>
+ </div>
+
+ <div class="card">
+ <h3 style="font-size: 1.35rem; font-weight: bold; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+ <span id="agenda-header-title">Séances du <span id="agenda-selected-date-title" style="color: var(--primary-light);">--</span></span>
+ <div style="display: flex; gap: 0.75rem; align-items: center;">
+ <span id="agenda-week-badge" style="font-size: 0.95rem; background: #e0e7ff; color: #3730a3; padding: 0.3rem 0.75rem; border-radius: 0.25rem; font-weight: bold;">Semaine --</span>
+ <span id="agenda-sessions-count" class="btn btn-secondary btn-sm">0 séance</span>
+ </div>
+ </h3>
+ <div id="agenda-sessions-list"></div>
+ </div>
+ </section>
+
+ <!-- 2. CAHIER DE TEXTE -->
+ <section id="sec-textbook" class="section">
+ <div class="card">
+ <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+ <div>
+ <h2 style="font-size: 1.5rem; font-weight: bold;">📖 Cahier de texte numérique</h2>
+ <p style="font-size: 1.1rem; color: var(--text-muted);">Contenus réels enseignés par classe (du plus récent au plus ancien).</p>
+ </div>
+ <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+ <button onclick="openExportWordModal()" class="btn btn-success btn-sm">📄 Exporter en Word (.doc)</button>
+ <button onclick="openAddTextbookModal()" class="btn btn-primary">+ Ajouter une séance (Cahier de texte)</button>
+ </div>
+ </div>
+ 
+<div id="textbook-class-tabs" style="display: flex; gap: 0.75rem; border-bottom: 2px solid var(--border); padding-bottom: 1rem; margin-bottom: 1.25rem; overflow-x: auto;"></div>
+ <div id="textbook-sessions-container" style="display: flex; flex-direction: column; gap: 1.25rem;"></div>
+ </div>
+ </section>
+
+ <!-- 3. DIAGRAMME DE GANTT -->
+ <section id="sec-gantt" class="section">
+ <div class="card">
+ <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+ <div>
+ <h2 style="font-size: 1.5rem; font-weight: bold;">📊 Progression annuelle — Diagramme de Gantt</h2>
+ <p style="font-size: 1.05rem; color: var(--text-muted);">Visualisation détaillée jour par jour avec repérage automatique de la date du jour.</p>
+ </div>
+ <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+ <label style="font-weight: 600;">Classe :</label>
+ <select id="gantt-class-select" onchange="renderGantt()" class="form-control" style="width: auto; margin-top: 0;"></select>
+ <button onclick="scrollToTodayInGantt()" class="btn btn-secondary btn-sm" title="Centrer sur aujourd'hui">📍 Aujourd'hui</button>
+ <button onclick="openAddMilestoneModal()" class="btn btn-primary btn-sm">◆ Ajouter un jalon</button>
+ </div>
+ </div>
+
+ <!-- Légende -->
+ <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center; background: #f8fafc; padding: 0.75rem 1rem; border-radius: 0.5rem; border: 1px solid var(--border); font-size: 0.95rem;">
+ <div style="display: flex; align-items: center; gap: 0.5rem;">
+ <span style="display:inline-block; width: 26px; height: 14px; background: #4338ca; border-radius: 3px;"></span>
+ <span>Chapitre (cours)</span>
+ </div>
+ <div style="display: flex; align-items: center; gap: 0.5rem;">
+ <span style="display:inline-flex; align-items:center; justify-content:center; width: 20px; height: 20px; border: 2px solid #dc2626; border-radius: 50%; color: #dc2626; font-weight: 900; font-size: 0.8rem;">✕</span>
+ <span>Évaluation</span>
+ </div>
+ <div style="display: flex; align-items: center; gap: 0.5rem;">
+ <span style="color: #d97706; font-size: 1.2rem; font-weight: bold;">◆</span>
+ <span>Jalon intercalé</span>
+ </div>
+ <div style="display: flex; align-items: center; gap: 0.5rem;">
+ <span style="display:inline-block; width: 16px; height: 16px; box-shadow: inset 0 0 0 2px #dc2626; background: #fff;"></span>
+ <span>Aujourd'hui</span>
+ </div>
+ </div>
+
+ <div id="gantt-container" class="gantt-wrapper"></div>
+ </div>
+ </section>
+
+ <!-- 4. CLASSES -->
+ <section id="sec-classes" class="section">
+ <div style="display: flex; justify-content: space-between; align-items: center;">
+ <h2 style="font-size: 1.5rem; font-weight: bold;">Gestion des Classes</h2>
+ <button onclick="openAddClassModal()" class="btn btn-primary">+ Créer une classe</button>
+ </div>
+ <div id="classes-grid" class="grid-3"></div>
+ </section>
+
+ <!-- 5. AGENDA TYPE -->
+ <section id="sec-template" class="section">
+ <div class="card" style="margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; background: #fff5f5; border: 1px solid #fed7d7; padding: 1.25rem; border-radius: 0.75rem;">
+ <div>
+ <h4 style="font-size: 1.15rem; font-weight: bold; color: #9b2c2c;">⚠️ Zone de réinitialisation</h4>
+ <p style="font-size: 1rem; color: #c53030;">Remet à zéro l'application et efface l'intégralité des données enregistrées.</p>
+ </div>
+ <button onclick="resetAllApplicationData()" class="btn btn-danger btn-sm">⚠️ Réinitialiser toutes les données</button>
+ </div>
+
+ <div class="card">
+ <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+ <div>
+ <h2 style="font-size: 1.5rem; font-weight: bold;">📋 Configuration des Agendas Types</h2>
+ <p style="font-size: 1.1rem; color: var(--text-muted);">Définissez vos emplois du temps types pour les semaines paires et impaires.</p>
+ </div>
+ <div style="display: flex; gap: 0.75rem; align-items: center;">
+ <select id="template-type-select" onchange="renderTemplateEditor()" class="form-control" style="width: auto;">
+ <option value="impaire">Semaine Impaire</option>
+ <option value="paire">Semaine Paire</option>
+ </select>
+ <button onclick="saveCurrentTemplate()" class="btn btn-success btn-sm">💾 Enregistrer le modèle</button>
+ </div>
+ </div>
+
+ <div style="background: #e0e7ff; padding: 1.25rem; border-radius: 0.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+ <div>
+ <h4 style="font-size: 1.15rem; font-weight: bold; color: #3730a3;">📥 Importer ce modèle dans l'Agenda</h4>
+ <p style="font-size: 1rem; color: #4338ca;">Choisissez le lundi de la semaine cible dans votre agenda.</p>
+ </div>
+ <div style="display: flex; gap: 0.75rem; align-items: center;">
+ <input type="date" id="import-template-monday" class="form-control" style="width: auto;">
+ <button onclick="importTemplateToAgenda()" class="btn btn-primary btn-sm">🚀 Importer vers l'Agenda</button>
+ </div>
+ </div>
+
+ <div id="template-editor-container" style="display: flex; flex-direction: column; gap: 1.25rem;"></div>
+ </div>
+ </section>
+
+ </main>
+
+ <!-- MODAL : JALON GANTT -->
+ <div id="modal-milestone" class="modal-overlay">
+ <div class="modal-card">
+ <div class="modal-header">
+ <h3 style="font-weight: bold; font-size: 1.35rem;">◆ Ajouter un jalon au Gantt</h3>
+ <button onclick="closeModal('modal-milestone')" class="close-btn">✖</button>
+ </div>
+ <form onsubmit="handleSaveMilestone(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+ <div>
+ <label style="font-size: 1rem; font-weight: 600;">Classe concernée</label>
+ <select id="milestone-class" required class="form-control"></select>
+ </div>
+ <div>
+ <label style="font-size: 1rem; font-weight: 600;">Intitulé du jalon</label>
+ <input type="text" id="milestone-title" placeholder="Ex: Conseil de classe T1, Brevet blanc, Sortie..." required class="form-control">
+ </div>
+ <div>
+ <label style="font-size: 1rem; font-weight: 600;">Date du jalon</label>
+ <input type="date" id="milestone-date" required class="form-control">
+ </div>
+ <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+ <button type="button" onclick="closeModal('modal-milestone')" class="btn btn-secondary">Annuler</button>
+ <button type="submit" class="btn btn-primary">Ajouter le jalon</button>
+ </div>
+ </form>
+ </div>
+ </div>
+
+ <!-- MODAL : EXPORT WORD -->
+ <div id="modal-export-word" class="modal-overlay">
+ <div class="modal-card">
+ <div class="modal-header">
+ <h3 style="font-weight: bold; font-size: 1.35rem;">📄 Exporter le Cahier de texte en Word</h3>
+ <button onclick="closeModal('modal-export-word')" class="close-btn">✖</button>
+ </div>
+ <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+ <div>
+ <label style="font-size: 1rem; font-weight: 600;">Classe(s) à exporter</label>
+ <select id="export-word-class" class="form-control">
+ <option value="ALL">⭐ Toutes les classes</option>
+ </select>
+ </div>
+ <div style="display: flex; gap: 0.75rem;">
+ <div style="flex: 1;">
+ <label style="font-size: 1rem; font-weight: 600;">Date de début</label>
+ <input type="date" id="export-word-start" class="form-control">
+ </div>
+ <div style="flex: 1;">
+ <label style="font-size: 1rem; font-weight: 600;">Date de fin</label>
+ <input type="date" id="export-word-end" class="form-control">
+ </div>
+ </div>
+ <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 0.35rem;">
+ <input type="checkbox" id="export-word-include-homework" checked style="width: 20px; height: 20px;">
+ <label for="export-word-include-homework" style="font-size: 1.1rem; font-weight: 500; cursor: pointer;">Inclure les devoirs</label>
+ </div>
+ <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.75rem;">
+ <button type="button" onclick="closeModal('modal-export-word')" class="btn btn-secondary">Annuler</button>
+ <button type="button" onclick="generateWordExport()" class="btn btn-success">📥 Télécharger Word</button>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- MODAL PLEINE PAGE : VUE DETAIL SÉANCE AGENDA -->
+ <div id="modal-session-fullscreen" class="modal-fullscreen">
+ <header style="background: var(--primary); color: white; padding: 1.25rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+ <button onclick="closeSessionFullscreen()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); color: white; border: none; font-size: 1.1rem;">
+ ← Retour
+ </button>
+ <div id="fs-session-class-badge" style="font-weight: bold; padding: 0.35rem 1rem; border-radius: 0.25rem; font-size: 1.2rem;">--</div>
+ <button onclick="closeSessionFullscreen()" style="background: none; border: none; color: white; font-size: 2rem; cursor: pointer;">✖</button>
+ </header>
+
+ <div style="max-width: 1000px; width: 100%; margin: 0 auto; padding: 2.5rem 2rem; display: flex; flex-direction: column; gap: 2rem; flex: 1;">
+ <div style="border-bottom: 2px solid var(--border); padding-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+ <div>
+ <div style="font-size: 1.15rem; color: var(--text-muted); font-weight: 600;" id="fs-session-date-time">--</div>
+ <h1 id="fs-session-title" style="font-size: 2.5rem; font-weight: bold; color: var(--text); margin-top: 0.35rem;">--</h1>
+ </div>
+ <div style="display: flex; gap: 0.75rem;" id="fs-session-actions"></div>
+ </div>
+
+ <div class="card" style="background: #ffffff; padding: 2rem; border-left: 8px solid var(--primary-light);">
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+ <h3 style="font-size: 1.25rem; font-weight: bold; color: var(--primary-light); text-transform: uppercase;">📖 Déroulé & Contenu du cours</h3>
+ <span style="font-size: 0.9rem; color: var(--text-muted);">Plage rapide : choisissez le début et la fin (ex: A → D ou 1 → 5)</span>
+ </div>
+ <div id="fs-session-content" style="font-size: 1.35rem; line-height: 1.8; color: var(--text);">Aucun contenu renseigné.</div>
+ </div>
+
+ <div class="card" style="background: #fffbeb; border: 1px solid #fde68a; padding: 1.75rem;">
+ <h3 style="font-size: 1.15rem; font-weight: bold; color: #92400e; margin-bottom: 0.75rem; text-transform: uppercase;">📚 Travail à faire / Devoirs</h3>
+ <div id="fs-session-homework" style="font-size: 1.25rem; color: #78350f; font-weight: 600; white-space: pre-line;">Aucun devoir enregistré.</div>
+ </div>
+ </div>
+ </div>
+
+ <!-- MODAL : SÉANCE AGENDA -->
+ <div id="modal-session" class="modal-overlay">
+ <div class="modal-card modal-wide">
+ <div class="modal-header">
+ <h3 id="modal-session-title" style="font-weight: bold; font-size: 1.35rem;">Ajouter une séance à l'Agenda</h3>
+ <button onclick="closeModal('modal-session')" class="close-btn">✖</button>
+ </div>
+ <div class="session-modal-layout">
+ <form onsubmit="handleSaveSession(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+ <input type="hidden" id="session-id">
+
+ <div style="display: flex; gap: 0.75rem;">
+ <div style="flex: 1;">
+ <label style="font-size: 1rem; font-weight: 600;">Date</label>
+ <input type="date" id="session-date" onchange="updateSessionTextbookSidebar()" required class="form-control">
+ </div>
+ <div style="flex: 1;">
+ <label style="font-size: 1rem; font-weight: 600;">Horaire du collège</label>
+ <select id="session-time-select" class="form-control" onchange="toggleCustomTime(this); updateSessionTextbookSidebar();">
+ <option value="8h15-9h10">8h15 - 9h10</option>
+ <option value="9h10-10h05">9h10 - 10h05</option>
+ <option value="10h20-11h15">10h20 - 11h15</option>
+ <option value="11h15-12h10">11h15 - 12h10</option>
+ <option value="13h30-14h25">13h30 - 14h25</option>
+ <option value="14h25-15h20">14h25 - 15h20</option>
+ <option value="15h35-16h30">15h35 - 16h30</option>
+ <option value="custom">Autre horaire...</option>
+ </select>
+ <input type="text" id="session-time-custom" placeholder="Ex: 12h10 - 13h00" class="form-control" style="display:none; margin-top:0.35rem;">
+ </div>
+ </div>
+ <div>
+ <label style="font-size: 1rem; font-weight: 600;">Nom de la classe</label>
+ <select id="session-class" onchange="updateSessionTextbookSidebar()" required class="form-control"></select>
+ </div>
+ <div>
+ <label style="font-size: 1rem; font-weight: 600;">Titre / Chapitre</label>
+ <input type="text" id="session-title-input" placeholder="Ex: Ch 3 - Triangles" required class="form-control">
+ </div>
+ <div>
+ <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+ <label style="font-size: 1rem; font-weight: 600;">Contenu / Déroulé (étapes)</label>
+ <div style="display: flex; gap: 0.5rem;">
+ <button type="button" onclick="addSessionLineTop()" class="btn btn-secondary btn-sm">+ Ajouter en haut</button>
+ <button type="button" onclick="addSessionLineItem()" class="btn btn-secondary btn-sm">+ Ajouter en bas</button>
+ </div>
+ </div>
+ <div id="session-lines-container" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; max-height: 250px; overflow-y: auto;"></div>
+ </div>
+ <div>
+ <label style="font-size: 1rem; font-weight: 600;">Devoirs prévus</label>
+ <textarea id="session-homework" rows="2" placeholder="Exercices..." class="form-control"></textarea>
+ </div>
+ <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.75rem;">
+ <button type="button" onclick="closeModal('modal-session')" class="btn btn-secondary">Annuler</button>
+ <button type="submit" class="btn btn-primary">Enregistrer</button>
+ </div>
+ </form>
+
+ <div style="display: flex; flex-direction: column; gap: 1rem;">
+ <div id="session-textbook-sidebar" class="textbook-sidebar-box"></div>
+ <div id="session-previous-sidebar" class="textbook-sidebar-box" style="border-left-color: var(--accent);">
+ <h4 style="font-size: 1.1rem; font-weight: bold; color: var(--accent);">🔄 Séance précédente (Agenda)</h4>
+ <div id="session-previous-preview-content" style="font-size: 0.95rem; color: var(--text-muted);">
+ Sélectionnez une classe et une date pour voir la séance précédente.
+ </div>
+ <button type="button" onclick="importPreviousSessionToAgenda()" class="btn btn-secondary btn-sm" style="margin-top: 0.35rem; width: 100%; justify-content: center;">
+ 📥 Importer cette séance
+ </button>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- MODAL : CAHIER DE TEXTE -->
+ <div id="modal-textbook" class="modal-overlay">
+ <div class="modal-card">
+ <div class="modal-header">
+ <h3 id="modal-textbook-title" style="font-weight: bold; font-size: 1.35rem;">Ajouter un contenu (Cahier de texte)</h3>
+ <button onclick="closeModal('modal-textbook')" class="close-btn">✖</button>
+ </div>
+ <form onsubmit="handleSaveTextbookEntry(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+ <input type="hidden" id="textbook-id">
+ <div style="display: flex; gap: 0.75rem;">
+ <div style="flex: 1;">
+ <label style="font-size: 1rem; font-weight: 600;">Date</label>
+ <input type="date" id="textbook-date" onchange="updateAgendaPreviewInTextbookModal()" required class="form-control">
+ </div>
+ <div style="flex: 1;">
+ <label style="font-size: 1rem; font-weight: 600;">Nom de la classe</label>
+ <select id="textbook-class" onchange="updateAgendaPreviewInTextbookModal()" required class="form-control"></select>
+ </div>
+ </div>
+
+ <div id="textbook-agenda-preview" style="display: none; background: #e0e7ff; border: 1px solid #c7d2fe; border-radius: 0.5rem; padding: 1rem; font-size: 1.05rem; color: #1e1b4b;"></div>
+
+ <div>
+ <label style="font-size: 1rem; font-weight: 600;">Titre / Chapitre</label>
+ <input type="text" id="textbook-title" placeholder="Titre..." required class="form-control">
+ </div>
+ <div>
+ <label style="font-size: 1rem; font-weight: 600;">Contenu réellement effectué</label>
+ <textarea id="textbook-content" rows="4" placeholder="Détail..." class="form-control"></textarea>
+ </div>
+ <div>
+ <label style="font-size: 1rem; font-weight: 600;">Devoirs donnés</label>
+ <textarea id="textbook-homework" rows="2" placeholder="Travail..." class="form-control"></textarea>
+ </div>
+ <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.75rem;">
+ <button type="button" onclick="closeModal('modal-textbook')" class="btn btn-secondary">Annuler</button>
+ <button type="submit" class="btn btn-primary">Enregistrer</button>
+ </div>
+ </form>
+ </div>
+ </div>
+
+ <!-- MODAL : DÉPLACER / COPIER -->
+ <div id="modal-move-session" class="modal-overlay">
+ <div class="modal-card">
+ <div class="modal-header">
+ <h3 id="move-modal-title" style="font-weight: bold; font-size: 1.35rem;">Copier / Déplacer la séance</h3>
+ <button onclick="closeModal('modal-move-session')" class="close-btn">✖</button>
+ </div>
+ <input type="hidden" id="move-session-id">
+ <input type="hidden" id="move-action-type">
+ <div>
+ <label style="font-size: 1rem; font-weight: 600;">Nouvelle date cible</label>
+ <input type="date" id="move-target-date" required class="form-control">
+ </div>
+ <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+ <button type="button" onclick="closeModal('modal-move-session')" class="btn btn-secondary">Annuler</button>
+ <button onclick="confirmMoveSession()" class="btn btn-primary">Valider</button>
+ </div>
+ </div>
+ </div>
+
+ <!-- MODAL : CLASSE -->
+ <div id="modal-class" class="modal-overlay">
+ <div class="modal-card">
+ <div class="modal-header">
+ <h3 id="modal-class-title" style="font-weight: bold; font-size: 1.35rem;">Gérer la classe</h3>
+ <button onclick="closeModal('modal-class')" class="close-btn">✖</button>
+ </div>
+ <form onsubmit="handleSaveClass(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+ <input type="hidden" id="class-id">
+ <div>
+ <label style="font-size: 1rem; font-weight: 600;">Nom de la classe</label>
+ <input type="text" id="class-name" placeholder="Ex: 6e C" required class="form-control">
+ </div>
+ <div>
+ <label style="font-size: 1rem; font-weight: 600;">Niveau</label>
+ <select id="class-level" required class="form-control">
+ <option value="6ème">6ème</option>
+ <option value="5ème">5ème</option>
+ <option value="4ème">4ème</option>
+ <option value="3ème">3ème</option>
+ <option value="Seconde">Seconde</option>
+ <option value="Première">Première</option>
+ <option value="Terminale">Terminale</option>
+ <option value="Autre">Autre</option>
+ </select>
+ </div>
+ <div>
+ <label style="font-size: 1rem; font-weight: 600;">Couleur</label>
+ <input type="color" id="class-color" value="#312e81" class="form-control" style="height: 45px; padding: 2px;">
+ </div>
+ <div>
+ <label style="font-size: 1rem; font-weight: 600;">Notes</label>
+ <textarea id="class-notes" rows="3" class="form-control"></textarea>
+ </div>
+ <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+ <button type="button" onclick="closeModal('modal-class')" class="btn btn-secondary">Annuler</button>
+ <button type="submit" class="btn btn-primary">Enregistrer</button>
+ </div>
+ </form>
+ </div>
+ </div>
+
+ <!-- MODAL : SYNC -->
+ <div id="modal-sync" class="modal-overlay">
+ <div class="modal-card">
+ <div class="modal-header">
+ <h3 style="font-weight: bold; font-size: 1.35rem;">☁️ Synchronisation Google Drive</h3>
+ <button onclick="closeModal('modal-sync')" class="close-btn">✖</button>
+ </div>
+ <div style="background-color: #e0e7ff; padding: 1rem; border-radius: 0.5rem; font-size: 1rem; color: #3730a3;">
+ 📌 <strong>Emplacement conseillé :</strong> Google Drive > collège Anne Cartier > agenda
+ </div>
+ <div style="background: var(--bg); padding: 1.25rem; border-radius: 0.5rem; border: 1px solid var(--border);">
+ <h4 style="font-size: 1.1rem; font-weight: bold; margin-bottom: 0.5rem;">Sauvegarde</h4>
+ <button onclick="exportDataToJSON()" class="btn btn-primary btn-sm">Exporter (.json)</button>
+ </div>
+ <div style="background: var(--bg); padding: 1.25rem; border-radius: 0.5rem; border: 1px solid var(--border);">
+ <h4 style="font-size: 1.1rem; font-weight: bold; margin-bottom: 0.5rem;">Restauration</h4>
+ <input type="file" id="import-file-input" accept=".json" onchange="importDataFromJSON(event)" style="display: none;">
+ <button onclick="document.getElementById('import-file-input').click()" class="btn btn-success btn-sm">Importer</button>
+ </div>
+ <div style="font-size: 0.95rem; color: var(--text-muted); text-align: right;">
+ Dernière modification : <span id="sync-last-update-text">--</span>
+ </div>
+ </div>
+ </div>
+
+ <!-- Script Application -->
+ <script>
+ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '\x26amp;', '<': '\x26lt;', '>': '\x26gt;', '"': '\x26quot;', "'": '\x26#39;' }[c]));
+ const pad2 = n => String(n).padStart(2, '0');
+ const toISO = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+ const parseDate = s => { const [y, m, d] = String(s).split('-').map(Number); return new Date(y, m - 1, d); };
+
+ const STANDARD_TIMES = [
+ "8h15-9h10", "9h10-10h05", "10h20-11h15", "11h15-12h10",
+ "13h30-14h25", "14h25-15h20", "15h35-16h30"
+ ];
+
+ const LETTERS_LIST = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
+ const NUMBERS_LIST = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+
+ function expandRangeItems(startVal, endVal) {
+ if (!startVal) return [];
+ if (!endVal || startVal === endVal) return [startVal];
+
+ const idxStartL = LETTERS_LIST.indexOf(startVal);
+ const idxEndL = LETTERS_LIST.indexOf(endVal);
+ if (idxStartL !== -1 && idxEndL !== -1) {
+ const min = Math.min(idxStartL, idxEndL);
+ const max = Math.max(idxStartL, idxEndL);
+ return LETTERS_LIST.slice(min, max + 1);
+ }
+
+ const idxStartN = NUMBERS_LIST.indexOf(startVal);
+ const idxEndN = NUMBERS_LIST.indexOf(endVal);
+ if (idxStartN !== -1 && idxEndN !== -1) {
+ const min = Math.min(idxStartN, idxEndN);
+ const max = Math.max(idxStartN, idxEndN);
+ return NUMBERS_LIST.slice(min, max + 1);
+ }
+
+ return [startVal];
+ }
+
+ function formatRangeBadge(line) {
+ if (!line || !line.rangeStart) return '';
+ if (!line.rangeEnd || line.rangeStart === line.rangeEnd) {
+ return line.rangeStart;
+ }
+ return `${line.rangeStart} → ${line.rangeEnd}`;
+ }
+
+ function buildRangeSelectOptions(selectedVal) {
+ let html = `<option value="">--</option>`;
+ html += `<optgroup label="Lettres (A - L)">`;
+ LETTERS_LIST.forEach(l => {
+ html += `<option value="${l}" ${selectedVal === l ? 'selected' : ''}>${l}</option>`;
+ });
+ html += `</optgroup>`;
+ html += `<optgroup label="Chiffres (1 - 10)">`;
+ NUMBERS_LIST.forEach(n => {
+ html += `<option value="${n}" ${selectedVal === n ? 'selected' : ''}>${n}</option>`;
+ });
+ html += `</optgroup>`;
+ return html;
+ }
+
+ const GRENOBLE_HOLIDAYS = [
+ { name: "Toussaint", start: "2025-10-18", end: "2025-11-02" },
+ { name: "Noël", start: "2025-12-20", end: "2026-01-04" },
+ { name: "Hiver (Zone A)", start: "2026-02-07", end: "2026-02-22" },
+ { name: "Printemps (Zone A)", start: "2026-04-04", end: "2026-04-19" },
+ { name: "Été", start: "2026-07-04", end: "2026-08-31" },
+ { name: "Toussaint", start: "2026-10-17", end: "2026-11-01" },
+ { name: "Noël", start: "2026-12-19", end: "2027-01-03" },
+ { name: "Hiver (Zone A)", start: "2027-02-13", end: "2027-02-28" },
+ { name: "Printemps (Zone A)", start: "2027-04-10", end: "2027-04-25" },
+ { name: "Été", start: "2027-07-03", end: "2027-08-31" }
+ ];
+
+ const DEFAULT_DATA = {
+ lastUpdated: new Date().toISOString(),
+ classes: [
+ { id: 'c_default', name: 'Pas cours/Vacances/Fériés', level: 'Autre', color: '#64748b', notes: '', students: [] },
+ { id: 'c1', name: '6e C', level: '6ème', color: '#2563eb', notes: 'Classe dynamique.', students: [] },
+ { id: 'c2', name: '3e A', level: '3ème', color: '#7c3aed', notes: 'Objectif Brevet.', students: [] }
+ ],
+ sessions: [],
+ textbook: [],
+ milestones: [],
+ templates: { paire: {}, impaire: {} }
+ };
+
+ let memoryFallback = null;
+ function getStorageData() {
+ try {
+ const stored = localStorage.getItem('stephane_teacher_app_data');
+ if (stored) {
+ let parsed = JSON.parse(stored);
+ if (!parsed.textbook) parsed.textbook = [];
+ if (!parsed.milestones) parsed.milestones = [];
+ if (!parsed.templates) parsed.templates = { paire: {}, impaire: {} };
+ if (!parsed.classes.some(c => c.name === 'Pas cours/Vacances/Fériés')) {
+ parsed.classes.unshift({ id: 'c_default', name: 'Pas cours/Vacances/Fériés', level: 'Autre', color: '#64748b', notes: '', students: [] });
+ }
+ return parsed;
+ }
+ return structuredClone(DEFAULT_DATA);
+ } catch (e) {
+ if (!memoryFallback) memoryFallback = structuredClone(DEFAULT_DATA);
+ return memoryFallback;
+ }
+ }
+
+ let appData = getStorageData();
+ let agendaViewMode = 'day';
+ let activeTextbookClass = null;
+ let activeGanttClass = null;
+
+ function saveData() {
+ appData.lastUpdated = new Date().toISOString();
+ try {
+ localStorage.setItem('stephane_teacher_app_data', JSON.stringify(appData));
+ } catch (e) {
+ memoryFallback = appData;
+ }
+ refreshCurrentView();
+ }
+
+ function resetAllApplicationData() {
+ if (confirm("Attention cela va supprimer toutes les données !")) {
+ localStorage.removeItem('stephane_teacher_app_data');
+ appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+ saveData();
+ alert("Données réinitialisées.");
+ }
+ }
+
+ function printAgenda() {
+ window.print();
+ }
+
+ function getTodayDateStr() {
+ return toISO(new Date());
+ }
+
+ function formatDateFullFr(dateStr) {
+ if (!dateStr) return '';
+ const parts = dateStr.split('-');
+ if (parts.length !== 3) return dateStr;
+ const d = new Date(parts[0], parts[1] - 1, parts[2]);
+ return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+ }
+
+ function formatDateShortFr(dateStr) {
+ if (!dateStr) return '';
+ const parts = dateStr.split('-');
+ if (parts.length !== 3) return dateStr;
+ const d = new Date(parts[0], parts[1] - 1, parts[2]);
+ return d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+ }
+
+ const _weekCache = new Map();
+ function getIsoWeekNumber(dateStr) {
+ let w = _weekCache.get(dateStr);
+ if (w) return w;
+ const d = parseDate(dateStr);
+ d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+ w = Math.ceil((Math.round((d - new Date(d.getFullYear(), 0, 1)) / 86400000) + 1) / 7);
+ _weekCache.set(dateStr, w);
+ return w;
+ }
+
+ function getStartTimeMinutes(timeStr) {
+ if (!timeStr) return 9999;
+ const match = timeStr.match(/(\d{1,2})[h:](\d{2})/i);
+ if (match) return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+ const hourOnly = timeStr.match(/(\d{1,2})h/i);
+ if (hourOnly) return parseInt(hourOnly[1], 10) * 60;
+ return 9999;
+ }
+
+ function switchTab(tabName) {
+ ['agenda', 'textbook', 'gantt', 'classes', 'template'].forEach(t => {
+ const sec = document.getElementById(`sec-${t}`);
+ const tab = document.getElementById(`tab-${t}`);
+ if (sec) sec.classList.remove('active');
+ if (tab) tab.classList.remove('active-tab');
+ });
+ document.getElementById(`sec-${tabName}`).classList.add('active');
+ document.getElementById(`tab-${tabName}`).classList.add('active-tab');
+ activeTab = tabName;
+ refreshCurrentView();
+
+ if (tabName === 'gantt') {
+ setTimeout(scrollToTodayInGantt, 50);
+ }
+ }
+
+ let activeTab = 'agenda';
+ function refreshCurrentView() {
+ ({ agenda: renderAgenda, textbook: renderTextbook, gantt: renderGantt, classes: renderClasses, template: renderTemplateEditor })[activeTab]();
+ saveUIState();
+ }
+
+ let selectedAgendaDate = getTodayDateStr();
+ let fsSessionId = null;
+
+ // Mémorise l'écran en cours (onglet, date, séance ouverte) pour le retrouver
+ // si le téléphone décharge la page quand on change d'appli.
+ const UI_KEY = 'agenda_ui_state';
+ function saveUIState() {
+ try {
+ localStorage.setItem(UI_KEY, JSON.stringify({
+ t: Date.now(), tab: activeTab, date: selectedAgendaDate, session: fsSessionId,
+ scroll: window.scrollY, gantt: activeGanttClass, textbook: activeTextbookClass
+ }));
+ } catch (e) {}
+ }
+ function restoreUIState() {
+ try {
+ const st = JSON.parse(localStorage.getItem(UI_KEY) || 'null');
+ if (!st || Date.now() - st.t > 6 * 3600 * 1000) return false;
+ if (st.date) selectedAgendaDate = st.date;
+ if (st.gantt) activeGanttClass = st.gantt;
+ if (st.textbook) activeTextbookClass = st.textbook;
+ if (st.tab && st.tab !== 'agenda') switchTab(st.tab); else refreshCurrentView();
+ if (st.session && appData.sessions.some(x => x.id === st.session)) openSessionFullscreen(st.session);
+ if (st.scroll) setTimeout(() => window.scrollTo(0, st.scroll), 50);
+ return true;
+ } catch (e) { return false; }
+ }
+ document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveUIState(); });
+ window.addEventListener('pagehide', saveUIState);
+
+ function setAgendaView(mode) {
+ agendaViewMode = mode;
+ document.getElementById('btn-view-day').className = mode === 'day' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm';
+ document.getElementById('btn-view-week').className = mode === 'week' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm';
+ renderAgenda();
+ }
+
+ function getMondayOfWeek(dateStr) {
+ const d = parseDate(dateStr);
+ d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+ return d;
+ }
+
+ function renderAgenda() {
+ const picker = document.getElementById('agenda-date-picker');
+ if (!picker.value) picker.value = selectedAgendaDate;
+ else selectedAgendaDate = picker.value;
+
+ const container = document.getElementById('agenda-sessions-list');
+ const weekNum = getIsoWeekNumber(selectedAgendaDate);
+ const parityLabel = (weekNum % 2 === 0) ? 'Paire' : 'Impaire';
+ document.getElementById('agenda-week-badge').innerText = `Semaine ${weekNum} (${parityLabel})`;
+
+ if (agendaViewMode === 'day') {
+ document.getElementById('agenda-header-title').innerHTML = `Séances du <span style="color: var(--primary-light);">${formatDateShortFr(selectedAgendaDate)}</span>`;
+ const sessions = appData.sessions.filter(s => s.date === selectedAgendaDate).sort((a,b) => getStartTimeMinutes(a.time) - getStartTimeMinutes(b.time));
+ document.getElementById('agenda-sessions-count').innerText = `${sessions.length} séance(s)`;
+ container.className = "";
+ container.innerHTML = sessions.length ? sessions.map(s => renderSessionCardHTML(s, true)).join('') : '<p style="font-size:1.1rem; color:var(--text-muted); text-align:center; padding:1.5rem;">Aucune séance programmée pour ce jour.</p>';
+ } else {
+ const monday = getMondayOfWeek(selectedAgendaDate);
+ const weekDates = [];
+ for (let i = 0; i < 5; i++) {
+ const temp = new Date(monday);
+ temp.setDate(monday.getDate() + i);
+ weekDates.push(toISO(temp));
+ }
+ document.getElementById('agenda-header-title').innerHTML = `Semaine ${weekNum} (${formatDateShortFr(weekDates[0])} au ${formatDateShortFr(weekDates[4])})`;
+ let totalWeekSessions = 0;
+ container.className = "grid-week";
+ container.innerHTML = weekDates.map(dStr => {
+ const daySessions = appData.sessions.filter(s => s.date === dStr).sort((a,b) => getStartTimeMinutes(a.time) - getStartTimeMinutes(b.time));
+ totalWeekSessions += daySessions.length;
+ const isToday = dStr === getTodayDateStr();
+ return `
+ <div class="card" style="padding:1rem; ${isToday ? 'border:2px solid var(--primary-light); background:#eeefef;' : ''}">
+ <div style="font-weight:bold; font-size:1.1rem; text-align:center; margin-bottom:0.75rem; padding-bottom:0.35rem; border-bottom:1px solid var(--border);">
+ ${formatDateShortFr(dStr)}
+ </div>
+ ${daySessions.length ? daySessions.map(s => renderSessionCardHTML(s, true, true)).join('') : '<p style="font-size:0.95rem; color:var(--text-muted); text-align:center; padding:0.75rem;">Pas de cours</p>'}
+ </div>
+ `;
+ }).join('');
+ document.getElementById('agenda-sessions-count').innerText = `${totalWeekSessions} séance(s) cette semaine`;
+ }
+ }
+
+ function changeAgendaDate(days) {
+ const curr = parseDate(selectedAgendaDate);
+ curr.setDate(curr.getDate() + (agendaViewMode === 'week' ? days * 7 : days));
+ selectedAgendaDate = toISO(curr);
+ document.getElementById('agenda-date-picker').value = selectedAgendaDate;
+ renderAgenda();
+ }
+
+ function setAgendaDateToToday() {
+ selectedAgendaDate = getTodayDateStr();
+ document.getElementById('agenda-date-picker').value = selectedAgendaDate;
+ renderAgenda();
+ }
+
+ function renderSessionCardHTML(s, controls = true, isCompact = false) {
+ const cls = appData.classes.find(c => c.name === s.className) || { color: '#64748b' };
+ let contentHtml = '';
+ if (s.lines && Array.isArray(s.lines) && s.lines.length > 0) {
+ const nonEmptyLines = s.lines.filter(l => l.text && l.text.trim() !== '');
+ if (nonEmptyLines.length > 0) {
+ contentHtml = `<div style="font-size:1.05rem; color:var(--text); display:flex; flex-direction:column; gap:0.25rem; margin-top:0.25rem;">` +
+ nonEmptyLines.map(l => {
+ const rangeBadge = formatRangeBadge(l);
+ return `
+ <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+ <span style="color:${l.checked ? '#059669' : 'var(--text-muted)'}; font-weight:bold;">${l.checked ? '✓' : '•'}</span>
+ <span style="${l.checked ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${esc(l.text)}</span>
+ ${rangeBadge ? `<span class="badge-subitems">${rangeBadge}</span>` : ''}
+ </div>
+ `;
+ }).join('') + `</div>`;
+ }
+ } else if (s.content) {
+ contentHtml = `<div style="font-size:1.05rem; color:var(--text-muted); white-space:pre-line;">${esc(s.content)}</div>`;
+ }
+
+ return `
+ <div class="session-card" onclick="openSessionFullscreen('${s.id}')" style="border-left-color: ${cls.color}; padding: ${isCompact ? '0.85rem' : '1.25rem'}; margin-bottom: 0.85rem;">
+ <div class="session-header">
+ <div>
+ <span class="badge-class" style="background:${cls.color}">${esc(s.className)}</span>
+ <span class="time-text">⏱ ${s.time}</span>
+ </div>
+ ${controls ? `
+ <div onclick="event.stopPropagation();" class="no-print">
+ <button onclick="openMoveSessionModal('${s.id}', 'copy')" class="btn btn-secondary btn-sm" style="padding:0.2rem 0.4rem;" title="Copier">📋</button>
+ <button onclick="openMoveSessionModal('${s.id}', 'move')" class="btn btn-secondary btn-sm" style="padding:0.2rem 0.4rem;" title="Déplacer">🔀</button>
+ <button onclick="openEditSessionModal('${s.id}')" class="btn btn-secondary btn-sm" style="padding:0.2rem 0.4rem;">✏️</button>
+ <button onclick="deleteSession('${s.id}')" class="btn btn-danger btn-sm" style="padding:0.2rem 0.4rem;">🗑</button>
+ </div>
+ ` : ''}
+ </div>
+ <div style="font-weight:bold; font-size:${isCompact ? '1.05rem' : '1.2rem'};">${esc(s.title)}</div>
+ ${contentHtml}
+ ${s.homework ? `<div style="font-size:1.05rem; background:#fffbeb; padding:0.35rem 0.75rem; border-radius:0.25rem; color:#92400e; white-space:pre-line; margin-top:0.35rem;">📚 Devoirs: ${esc(s.homework)}</div>` : ''}
+ </div>
+ `;
+ }
+
+ function executeTemplateImport(type, mondayDateObj) {
+ if (!appData.templates || !appData.templates[type]) return 0;
+ const template = appData.templates[type];
+ let importedCount = 0;
+ for (let i = 0; i < 5; i++) {
+ const targetDate = new Date(mondayDateObj);
+ targetDate.setDate(mondayDateObj.getDate() + i);
+ const dateStr = toISO(targetDate);
+ const dayOfWeek = i + 1;
+ STANDARD_TIMES.forEach(time => {
+ const key = `${dayOfWeek}_${time}`;
+ const slot = template[key];
+ if (slot && slot.className && slot.className !== 'VIDE') {
+ const exists = appData.sessions.some(s => s.date === dateStr && s.time === time);
+ if (!exists) {
+ appData.sessions.push({
+ id: 's_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+ date: dateStr,
+ time: time,
+ className: slot.className,
+ title: slot.title || (slot.className === 'Pas cours/Vacances/Fériés' ? 'Pas cours / Vacances' : `Cours ${slot.className}`),
+ lines: [{ text: slot.title || '', checked: false }],
+ content: '',
+ homework: ''
+ });
+ importedCount++;
+ }
+ }
+ });
+ }
+ return importedCount;
+ }
+
+ function importCurrentWeekTemplateFromAgenda() {
+ const weekNum = getIsoWeekNumber(selectedAgendaDate);
+ const isEven = (weekNum % 2 === 0);
+ const type = isEven ? 'paire' : 'impaire';
+ const label = isEven ? 'Paire' : 'Impaire';
+ const monday = getMondayOfWeek(selectedAgendaDate);
+ if (confirm(`Importer l'agenda type Semaine ${label} pour la semaine n°${weekNum} ?`)) {
+ const importedCount = executeTemplateImport(type, monday);
+ saveData();
+ alert(`${importedCount} séance(s) importée(s) !`);
+ }
+ }
+
+ /* 2. DIAGRAMME DE GANTT QUOTIDIEN */
+ function hasEvaluationKeyword(session) {
+ const textToSearch = `${session.title || ''} ${session.content || ''} ${(session.lines || []).map(l => l.text).join(' ')}`;
+ return /[eéèêë]valuation/i.test(textToSearch);
+ }
+
+ const _holCache = new Map();
+ function getGrenobleHolidayName(dateStr) {
+ if (!_holCache.has(dateStr)) {
+ const h = GRENOBLE_HOLIDAYS.find(h => dateStr >= h.start && dateStr <= h.end);
+ _holCache.set(dateStr, h ? h.name : null);
+ }
+ return _holCache.get(dateStr);
+ }
+
+ function getSchoolYearDays(referenceYear) {
+ const start = new Date(referenceYear, 8, 1);
+ const end = new Date(referenceYear + 1, 6, 14);
+ const days = [];
+ let curr = new Date(start);
+ while (curr <= end) {
+ days.push(toISO(curr));
+ curr.setDate(curr.getDate() + 1);
+ }
+ return days;
+ }
+
+ function getReferenceSchoolYear(className) {
+ const classSessions = appData.sessions.filter(s => s.className === className);
+ const classMilestones = (appData.milestones || []).filter(m => m.className === className);
+ const allDates = [...classSessions.map(s => s.date), ...classMilestones.map(m => m.date)].sort();
+ const refDateStr = allDates.length > 0 ? allDates[0] : getTodayDateStr();
+ const d = parseDate(refDateStr);
+ return d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1;
+ }
+
+ function renderGantt() {
+ const select = document.getElementById('gantt-class-select');
+ const validClasses = appData.classes.filter(c => c.name !== 'Pas cours/Vacances/Fériés');
+ if (validClasses.length === 0) {
+ document.getElementById('gantt-container').innerHTML = '<p style="padding:1.5rem; text-align:center; color:var(--text-muted);">Aucune classe configurée.</p>';
+ return;
+ }
+
+ if (select.value && validClasses.some(c => c.name === select.value)) {
+ activeGanttClass = select.value;
+ } else if (!activeGanttClass || !validClasses.some(c => c.name === activeGanttClass)) {
+ activeGanttClass = validClasses[0].name;
+ }
+
+ select.innerHTML = validClasses.map(c => `<option value="${esc(c.name)}" ${c.name === activeGanttClass ? 'selected' : ''}>${esc(c.name)}</option>`).join('');
+ select.value = activeGanttClass;
+
+ const schoolYear = getReferenceSchoolYear(activeGanttClass);
+ const allDays = getSchoolYearDays(schoolYear);
+ const todayStr = getTodayDateStr();
+
+ const classSessions = appData.sessions
+ .filter(s => s.className === activeGanttClass && s.title && s.title.trim() !== '')
+ .sort((a, b) => a.date.localeCompare(b.date));
+
+ const chapterMap = new Map();
+ const chaptersList = [];
+
+ classSessions.forEach(s => {
+ const titleKey = s.title.trim();
+ if (!chapterMap.has(titleKey)) {
+ const chObj = {
+ title: titleKey,
+ firstDate: s.date,
+ lastDate: s.date,
+ evalDates: []
+ };
+ chapterMap.set(titleKey, chObj);
+ chaptersList.push(chObj);
+ }
+ const ch = chapterMap.get(titleKey);
+ if (s.date < ch.firstDate) ch.firstDate = s.date;
+ if (s.date > ch.lastDate) ch.lastDate = s.date;
+ if (hasEvaluationKeyword(s)) {
+ ch.evalDates.push(s.date);
+ }
+ });
+
+ let classMilestones = (appData.milestones || []).filter(m => m.className === activeGanttClass);
+
+ let ganttRows = [];
+ chaptersList.forEach(ch => {
+ ganttRows.push({ type: 'chapter', data: ch, sortDate: ch.firstDate });
+ });
+ classMilestones.forEach(ms => {
+ ganttRows.push({ type: 'milestone', data: ms, sortDate: ms.date });
+ });
+ ganttRows.sort((a, b) => a.sortDate.localeCompare(b.sortDate));
+
+ let weeksHeaderHtml = `<thead><tr><th class="gantt-header-sticky" rowspan="2">Tâches, Chapitres & Jalons (${schoolYear}-${schoolYear + 1})</th>`;
+ let daysHeaderHtml = `<tr>`;
+
+ let currentWeekNum = null;
+ let currentWeekDayCount = 0;
+
+ allDays.forEach((dateStr) => {
+ const dObj = parseDate(dateStr);
+ const dayOfWeek = dObj.getDay();
+ const wNum = getIsoWeekNumber(dateStr);
+ const dayLetter = ['D', 'L', 'Ma', 'Me', 'J', 'V', 'S'][dayOfWeek];
+ const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+ const holName = getGrenobleHolidayName(dateStr);
+
+ if (wNum !== currentWeekNum) {
+ if (currentWeekNum !== null) {
+ weeksHeaderHtml = weeksHeaderHtml.replace(`__COLSPAN_${currentWeekNum}__`, currentWeekDayCount);
+ }
+ currentWeekNum = wNum;
+ currentWeekDayCount = 1;
+ weeksHeaderHtml += `<th colspan="__COLSPAN_${wNum}__" style="font-size:0.8rem; background:#f1f5f9;">S${wNum}</th>`;
+ } else {
+ currentWeekDayCount++;
+ }
+
+ let colClass = 'gantt-day-col';
+ if (dateStr === todayStr) colClass += ' gantt-today-col';
+ if (holName) colClass += ' gantt-holiday-col';
+ else if (isWeekend) colClass += ' gantt-weekend-col';
+
+ daysHeaderHtml += `<th class="${colClass}" id="gantt-day-${dateStr}" title="${dateStr}${holName ? ' (' + holName + ')' : ''}">${dayLetter}</th>`;
+ });
+ weeksHeaderHtml = weeksHeaderHtml.replace(`__COLSPAN_${currentWeekNum}__`, currentWeekDayCount);
+ weeksHeaderHtml += `</tr>`;
+ daysHeaderHtml += `</tr></thead>`;
+
+ let bodyHtml = `<tbody>`;
+
+ if (ganttRows.length === 0) {
+ bodyHtml += `<tr><td colspan="${allDays.length + 1}" style="padding:2rem; text-align:center; color:var(--text-muted); background:#ffffff;">Aucun chapitre ni jalon pour <strong>${esc(activeGanttClass)}</strong>.</td></tr>`;
+ } else {
+ ganttRows.forEach((row) => {
+ if (row.type === 'chapter') {
+ const ch = row.data;
+ const evalSet = new Set(ch.evalDates);
+
+ bodyHtml += `<tr>
+ <td class="gantt-sticky-col">
+ <div style="font-weight:bold; color:var(--text);">${esc(ch.title)}</div>
+ <div style="font-size:0.8rem; color:var(--text-muted);">Du ${formatDateShortFr(ch.firstDate)} au ${formatDateShortFr(ch.lastDate)}</div>
+ </td>`;
+
+ allDays.forEach(dateStr => {
+ const dObj = parseDate(dateStr);
+ const dayOfWeek = dObj.getDay();
+ const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+ const holName = getGrenobleHolidayName(dateStr);
+
+ const inRange = (dateStr >= ch.firstDate && dateStr <= ch.lastDate);
+ const isEval = evalSet.has(dateStr);
+
+ let colClass = 'gantt-day-col';
+ if (dateStr === todayStr) colClass += ' gantt-today-col';
+
+ if (inRange) {
+ colClass += ' gantt-active-bar';
+ } else if (holName) {
+ colClass += ' gantt-holiday-col';
+ } else if (isWeekend) {
+ colClass += ' gantt-weekend-col';
+ }
+
+ let cellInner = isEval ? `<span class="gantt-eval-badge" title="Évaluation le ${formatDateShortFr(dateStr)}">✕</span>` : '';
+
+ bodyHtml += `<td class="${colClass}" title="${dateStr}">${cellInner}</td>`;
+ });
+ bodyHtml += `</tr>`;
+
+ } else if (row.type === 'milestone') {
+ const ms = row.data;
+
+ bodyHtml += `<tr>
+ <td class="gantt-sticky-col" style="background:#fffbeb !important;">
+ <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+ <div>
+ <div style="font-weight:bold; color:#92400e;">◆ ${esc(ms.title)}</div>
+ <div style="font-size:0.8rem; color:#b45309;">${formatDateShortFr(ms.date)}</div>
+ </div>
+ <div style="display:flex; gap:0.2rem; flex-shrink:0;">
+ <button onclick="moveMilestoneOrder('${ms.id}', -1)" class="btn-icon-order" title="Monter">▲</button>
+ <button onclick="moveMilestoneOrder('${ms.id}', 1)" class="btn-icon-order" title="Descendre">▼</button>
+ <button onclick="deleteMilestone('${ms.id}')" class="btn btn-danger btn-sm" style="padding:0.15rem 0.45rem; font-size:0.85rem;" title="Supprimer">✕</button>
+ </div>
+ </div>
+ </td>`;
+
+ allDays.forEach(dateStr => {
+ const dObj = parseDate(dateStr);
+ const dayOfWeek = dObj.getDay();
+ const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+ const holName = getGrenobleHolidayName(dateStr);
+
+ let colClass = 'gantt-day-col';
+ if (dateStr === todayStr) colClass += ' gantt-today-col';
+ if (holName) colClass += ' gantt-holiday-col';
+ else if (isWeekend) colClass += ' gantt-weekend-col';
+
+ const isMsDay = (dateStr === ms.date);
+ let diamondHtml = isMsDay ? `<span class="gantt-milestone-icon" title="Jalon : ${esc(ms.title)}">◆</span>` : '';
+
+ bodyHtml += `<td class="${colClass}">${diamondHtml}</td>`;
+ });
+ bodyHtml += `</tr>`;
+ }
+ });
+ }
+
+ bodyHtml += `</tbody>`;
+ document.getElementById('gantt-container').innerHTML = `<table class="gantt-table">${weeksHeaderHtml}${daysHeaderHtml}${bodyHtml}</table>`;
+ }
+
+ function scrollToTodayInGantt() {
+ const todayStr = getTodayDateStr();
+ const todayTh = document.getElementById(`gantt-day-${todayStr}`);
+ const wrapper = document.getElementById('gantt-container');
+ if (todayTh && wrapper) {
+ const targetLeft = todayTh.offsetLeft - wrapper.clientWidth / 2 + 100;
+ wrapper.scrollTo({ left: targetLeft, behavior: 'smooth' });
+ }
+ }
+
+ function openAddMilestoneModal() {
+ const select = document.getElementById('milestone-class');
+ const validClasses = appData.classes.filter(c => c.name !== 'Pas cours/Vacances/Fériés');
+ select.innerHTML = validClasses.map(c => `<option value="${esc(c.name)}" ${c.name === activeGanttClass ? 'selected' : ''}>${esc(c.name)}</option>`).join('');
+ document.getElementById('milestone-title').value = '';
+ document.getElementById('milestone-date').value = getTodayDateStr();
+ document.getElementById('modal-milestone').classList.add('open');
+ }
+
+ function handleSaveMilestone(e) {
+ e.preventDefault();
+ if (!appData.milestones) appData.milestones = [];
+ const msObj = {
+ id: 'ms_' + Date.now(),
+ className: document.getElementById('milestone-class').value,
+ title: document.getElementById('milestone-title').value,
+ date: document.getElementById('milestone-date').value
+ };
+ appData.milestones.push(msObj);
+ activeGanttClass = msObj.className;
+ saveData();
+ closeModal('modal-milestone');
+ }
+
+ function moveMilestoneOrder(milestoneId, direction) {
+ if (!appData.milestones) return;
+ const classMilestones = appData.milestones.filter(m => m.className === activeGanttClass);
+ const idxInClass = classMilestones.findIndex(m => m.id === milestoneId);
+ if (idxInClass === -1) return;
+ const targetIdx = idxInClass + direction;
+ if (targetIdx < 0 || targetIdx >= classMilestones.length) return;
+
+ const globalIdxA = appData.milestones.findIndex(m => m.id === milestoneId);
+ const targetMsId = classMilestones[targetIdx].id;
+ const globalIdxB = appData.milestones.findIndex(m => m.id === targetMsId);
+
+ const temp = appData.milestones[globalIdxA];
+ appData.milestones[globalIdxA] = appData.milestones[globalIdxB];
+ appData.milestones[globalIdxB] = temp;
+ saveData();
+ }
+
+ function deleteMilestone(milestoneId) {
+ if (confirm("Supprimer ce jalon ?")) {
+ appData.milestones = (appData.milestones || []).filter(m => m.id !== milestoneId);
+ saveData();
+ }
+ }
+
+ /* 3. Agenda Type & Classes & Sync */
+ function renderTemplateEditor() {
+ const type = document.getElementById('template-type-select').value;
+ const container = document.getElementById('template-editor-container');
+ const days = [{ id: 1, name: 'Lundi' }, { id: 2, name: 'Mardi' }, { id: 3, name: 'Mercredi' }, { id: 4, name: 'Jeudi' }, { id: 5, name: 'Vendredi' }];
+ if (!appData.templates) appData.templates = { paire: {}, impaire: {} };
+ const currentTemplate = appData.templates[type] || {};
+
+ container.innerHTML = days.map(day => `
+ <div class="card" style="background: #f8fafc; padding: 1.25rem;">
+ <h4 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 1rem; color: var(--primary);">${day.name}</h4>
+ <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+ ${STANDARD_TIMES.map(time => {
+ const key = `${day.id}_${time}`;
+ const slotData = currentTemplate[key] || { className: 'VIDE', title: '' };
+ return `
+ <div style="display: flex; gap: 0.75rem; align-items: center; background: white; padding: 0.75rem; border: 1px solid var(--border); border-radius: 0.375rem;">
+ <span style="font-size: 1.05rem; font-weight: 600; width: 110px; flex-shrink: 0;">⏱ ${time}</span>
+ <select class="form-control template-class-select" data-day="${day.id}" data-time="${time}" style="margin-top:0; width: 220px;">
+ <option value="VIDE" ${slotData.className === 'VIDE' ? 'selected' : ''}>-- Vide --</option>
+ ${appData.classes.map(c => `<option value="${esc(c.name)}" ${slotData.className === c.name ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}
+ </select>
+ <input type="text" class="form-control template-title-input" data-day="${day.id}" data-time="${time}" value="${esc(slotData.title)}" placeholder="Titre / Chapitre..." style="margin-top:0; flex: 1;">
+ </div>
+ `;
+ }).join('')}
+ </div>
+ </div>
+ `).join('');
+
+ const todayMonday = getMondayOfWeek(getTodayDateStr());
+ const mondayInput = document.getElementById('import-template-monday');
+ if (!mondayInput.value) mondayInput.value = toISO(todayMonday);
+ }
+
+ function saveCurrentTemplate() {
+ const type = document.getElementById('template-type-select').value;
+ if (!appData.templates) appData.templates = { paire: {}, impaire: {} };
+ const newTemplate = {};
+ const classSelects = document.querySelectorAll('.template-class-select');
+ const titleInputs = document.querySelectorAll('.template-title-input');
+ for (let i = 0; i < classSelects.length; i++) {
+ const day = classSelects[i].getAttribute('data-day');
+ const time = classSelects[i].getAttribute('data-time');
+ newTemplate[`${day}_${time}`] = { className: classSelects[i].value, title: titleInputs[i].value };
+ }
+ appData.templates[type] = newTemplate;
+ saveData();
+ alert("Modèle enregistré !");
+ }
+
+ function importTemplateToAgenda() {
+ const type = document.getElementById('template-type-select').value;
+ const mondayStr = document.getElementById('import-template-monday').value;
+ if (!mondayStr) return alert("Sélectionnez un lundi.");
+ const importedCount = executeTemplateImport(type, parseDate(mondayStr));
+ saveData();
+ alert(`${importedCount} séance(s) importée(s) !`);
+ switchTab('agenda');
+ }
+
+ function renderTextbook() {
+ const tabsContainer = document.getElementById('textbook-class-tabs');
+ const sessionsContainer = document.getElementById('textbook-sessions-container');
+ const validClasses = appData.classes.filter(c => c.name !== 'Pas cours/Vacances/Fériés');
+ if (validClasses.length === 0) return;
+ if (!activeTextbookClass || !validClasses.some(c => c.name === activeTextbookClass)) {
+ activeTextbookClass = validClasses[0].name;
+ }
+ tabsContainer.innerHTML = validClasses.map(c => `
+ <button data-class="${esc(c.name)}" onclick="setActiveTextbookClass(this.dataset.class)" class="btn ${activeTextbookClass === c.name ? 'btn-primary' : 'btn-secondary'} btn-sm">${esc(c.name)}</button>
+ `).join('');
+ const classEntries = (appData.textbook || []).filter(e => e.className === activeTextbookClass).sort((a, b) => new Date(b.date) - new Date(a.date));
+ sessionsContainer.innerHTML = classEntries.length ? classEntries.map(e => `
+ <div class="card" style="background:#ffffff; border-left: 6px solid var(--primary-light); padding:1.25rem; display:flex; flex-direction:column; gap:0.75rem;">
+ <div style="display:flex; justify-content:space-between; align-items:center;">
+ <div style="font-weight:bold; color:var(--primary); font-size:1.15rem;">📅 ${formatDateFullFr(e.date)}</div>
+ <div class="no-print">
+ <button onclick="openEditTextbookModal('${e.id}')" class="btn btn-secondary btn-sm">✏️</button>
+ <button onclick="deleteTextbookEntry('${e.id}')" class="btn btn-danger btn-sm">🗑</button>
+ </div>
+ </div>
+ <h4 style="font-size:1.25rem; font-weight:bold;">${esc(e.title)}</h4>
+ <div style="white-space: pre-line;">${esc(e.content)}</div>
+ ${e.homework ? `<div style="background:#fffbeb; padding:0.75rem; border-radius:0.375rem; color:#78350f;"><strong>Devoirs :</strong> ${esc(e.homework)}</div>` : ''}
+ </div>
+ `).join('') : '<p style="color:var(--text-muted); text-align:center; padding:2rem;">Aucune entrée.</p>';
+ }
+
+ function setActiveTextbookClass(c) { activeTextbookClass = c; renderTextbook(); }
+ function populateTextbookClassDropdown() {
+ document.getElementById('textbook-class').innerHTML = appData.classes.filter(c => c.name !== 'Pas cours/Vacances/Fériés').map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+ }
+
+ function openExportWordModal() {
+ document.getElementById('export-word-class').innerHTML = `<option value="ALL">⭐ Toutes</option>` + appData.classes.filter(c => c.name !== 'Pas cours/Vacances/Fériés').map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+ document.getElementById('modal-export-word').classList.add('open');
+ }
+
+ function generateWordExport() {
+ const cls = document.getElementById('export-word-class').value;
+ const start = document.getElementById('export-word-start').value;
+ const end = document.getElementById('export-word-end').value;
+ const withHw = document.getElementById('export-word-include-homework').checked;
+ const entries = (appData.textbook || [])
+ .filter(e => (cls === 'ALL' || e.className === cls) && (!start || e.date >= start) && (!end || e.date <= end))
+ .sort((a, b) => a.date.localeCompare(b.date));
+ if (!entries.length) return alert("Aucune entrée.");
+ const nl = t => esc(t).replace(/\n/g, '<br>');
+ const body = entries.map(e =>
+ `<h3>${esc(e.className)} - ${esc(formatDateFullFr(e.date))}</h3><p><b>${esc(e.title)}</b></p><p>${nl(e.content || '')}</p>` +
+ (withHw && e.homework ? `<p><i>Devoirs : ${nl(e.homework)}</i></p>` : '')
+ ).join('');
+ const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body><h1>Cahier de texte</h1>${body}</body></html>`;
+ const url = URL.createObjectURL(new Blob(['\ufeff' + html], { type: 'application/msword' }));
+ const a = document.createElement('a');
+ a.href = url; a.download = 'cahier_de_texte.doc';
+ document.body.appendChild(a); a.click(); a.remove();
+ URL.revokeObjectURL(url);
+ closeModal('modal-export-word');
+ }
+
+ function updateAgendaPreviewInTextbookModal() {
+ const d = document.getElementById('textbook-date').value;
+ const c = document.getElementById('textbook-class').value;
+ const box = document.getElementById('textbook-agenda-preview');
+ const match = appData.sessions.find(s => s.date === d && s.className === c);
+ if (match) {
+ box.style.display = 'block';
+ box.innerHTML = `<strong>Agenda (${match.time}) :</strong> ${esc(match.title)} <button type="button" onclick="importAgendaToTextbookForm('${match.id}')" class="btn btn-primary btn-sm" style="font-size:0.8rem; margin-left:0.5rem;">Importer</button>`;
+ } else box.style.display = 'none';
+ }
+
+ function importAgendaToTextbookForm(id) {
+ const s = appData.sessions.find(x => x.id === id);
+ if (!s) return;
+ document.getElementById('textbook-title').value = s.title;
+ document.getElementById('textbook-content').value = (s.lines || [])
+ .filter(l => l.text && l.text.trim() !== '')
+ .map(l => {
+ const expanded = expandRangeItems(l.rangeStart, l.rangeEnd);
+ const suffixItems = expanded.length > 0 ? ' - ' + expanded.join(' - ') : '';
+ const baseLine = `${esc(l.text)}${suffixItems}`;
+ return l.checked ? `${baseLine} — FAIT et CORRIGE` : baseLine;
+ })
+ .join('\n');
+ }
+
+ function openAddTextbookModal() {
+ populateTextbookClassDropdown();
+ document.getElementById('textbook-id').value = '';
+ document.getElementById('textbook-date').value = getTodayDateStr();
+ document.getElementById('textbook-title').value = '';
+ document.getElementById('textbook-content').value = '';
+ document.getElementById('textbook-homework').value = '';
+ updateAgendaPreviewInTextbookModal();
+ document.getElementById('modal-textbook').classList.add('open');
+ }
+
+ function openEditTextbookModal(id) {
+ const entry = (appData.textbook || []).find(x => x.id === id);
+ if (!entry) return;
+ populateTextbookClassDropdown();
+ document.getElementById('textbook-id').value = entry.id;
+ document.getElementById('textbook-date').value = entry.date;
+ document.getElementById('textbook-class').value = entry.className;
+ document.getElementById('textbook-title').value = entry.title;
+ document.getElementById('textbook-content').value = entry.content || '';
+ document.getElementById('textbook-homework').value = entry.homework || '';
+ updateAgendaPreviewInTextbookModal();
+ document.getElementById('modal-textbook').classList.add('open');
+ }
+
+ function handleSaveTextbookEntry(e) {
+ e.preventDefault();
+ const id = document.getElementById('textbook-id').value;
+ const obj = {
+ id: id || ('tb_' + Date.now()),
+ date: document.getElementById('textbook-date').value,
+ className: document.getElementById('textbook-class').value,
+ title: document.getElementById('textbook-title').value,
+ content: document.getElementById('textbook-content').value,
+ homework: document.getElementById('textbook-homework').value
+ };
+ if (!appData.textbook) appData.textbook = [];
+ if (id) {
+ const idx = appData.textbook.findIndex(x => x.id === id);
+ if (idx !== -1) appData.textbook[idx] = obj;
+ } else appData.textbook.push(obj);
+ activeTextbookClass = obj.className;
+ saveData();
+ closeModal('modal-textbook');
+ }
+
+ function deleteTextbookEntry(id) {
+ if (confirm("Supprimer ?")) {
+ appData.textbook = (appData.textbook || []).filter(e => e.id !== id);
+ saveData();
+ }
+ }
+
+ function openSessionFullscreen(id) {
+ const s = appData.sessions.find(x => x.id === id);
+ if (!s) return;
+ const cls = appData.classes.find(c => c.name === s.className) || { color: '#312e81' };
+ const badge = document.getElementById('fs-session-class-badge');
+ badge.innerText = s.className; badge.style.backgroundColor = cls.color;
+ document.getElementById('fs-session-date-time').innerText = `📅 ${formatDateFullFr(s.date)} — ⏱ ${s.time}`;
+ document.getElementById('fs-session-title').innerText = s.title;
+ 
+const contentContainer = document.getElementById('fs-session-content');
+ if (s.lines && s.lines.length) {
+ contentContainer.innerHTML = s.lines.map((l, idx) => {
+ const expanded = expandRangeItems(l.rangeStart, l.rangeEnd);
+ const previewList = expanded.length > 0 ? expanded.join(' - ') : '';
+ return `
+ <div class="fs-line-row">
+ <label style="display:flex; align-items:center; gap:0.75rem; cursor:pointer; font-size:1.3rem; flex:1; min-width: 240px;">
+ <input type="checkbox" ${l.checked ? 'checked' : ''} onchange="toggleFullscreenLineCheck('${s.id}', ${idx}, this.checked)" style="width:24px; height:24px; flex-shrink:0;">
+ <span style="${l.checked ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${esc(l.text)}</span>
+ ${previewList ? `<span class="badge-subitems">- ${previewList}</span>` : ''}
+ </label>
+ <div style="display:flex; align-items:center; gap:0.4rem; flex-shrink:0;" title="Sélectionner la plage de questions réalisées">
+ <span style="font-size:0.9rem; color:var(--text-muted); font-weight:600;">De</span>
+ <select class="range-select-compact" onchange="updateFullscreenLineRange('${s.id}', ${idx}, 'start', this.value)">
+ ${buildRangeSelectOptions(l.rangeStart || '')}
+ </select>
+ <span style="font-size:0.9rem; color:var(--text-muted); font-weight:600;">à</span>
+ <select class="range-select-compact" onchange="updateFullscreenLineRange('${s.id}', ${idx}, 'end', this.value)">
+ ${buildRangeSelectOptions(l.rangeEnd || '')}
+ </select>
+ </div>
+ </div>
+ `;
+ }).join('');
+ } else contentContainer.innerText = s.content || "Aucun contenu.";
+
+ document.getElementById('fs-session-homework').innerText = s.homework || "Aucun devoir.";
+ document.getElementById('fs-session-actions').innerHTML = `
+ <button onclick="closeSessionFullscreen(); openEditSessionModal('${s.id}');" class="btn btn-secondary">✏️</button>
+ <button onclick="closeSessionFullscreen(); deleteSession('${s.id}');" class="btn btn-danger">🗑</button>
+ `;
+ document.getElementById('modal-session-fullscreen').classList.add('open');
+ fsSessionId = id;
+ saveUIState();
+ }
+
+ function toggleFullscreenLineCheck(sessionId, lineIndex, isChecked) {
+ const session = appData.sessions.find(s => s.id === sessionId);
+ if (session && session.lines && session.lines[lineIndex]) {
+ session.lines[lineIndex].checked = isChecked;
+ saveData();
+ openSessionFullscreen(sessionId);
+ }
+ }
+
+ function updateFullscreenLineRange(sessionId, lineIndex, boundType, value) {
+ const session = appData.sessions.find(s => s.id === sessionId);
+ if (session && session.lines && session.lines[lineIndex]) {
+ const line = session.lines[lineIndex];
+ if (boundType === 'start') {
+ line.rangeStart = value;
+ if (!value) {
+ line.rangeEnd = '';
+ } else if (!line.rangeEnd) {
+ line.rangeEnd = value;
+ }
+ } else if (boundType === 'end') {
+ line.rangeEnd = value;
+ if (value && !line.rangeStart) {
+ line.rangeStart = value;
+ }
+ }
+ saveData();
+ openSessionFullscreen(sessionId);
+ }
+ }
+
+ function closeSessionFullscreen() { document.getElementById('modal-session-fullscreen').classList.remove('open'); fsSessionId = null; saveUIState(); }
+ function toggleCustomTime(selectEl) {
+ document.getElementById('session-time-custom').style.display = (selectEl.value === 'custom') ? 'block' : 'none';
+ }
+ function populateClassDropdown() {
+ document.getElementById('session-class').innerHTML = appData.classes.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+ }
+
+ let currentModalLines = [];
+ function renderSessionLines(lines = []) {
+ const container = document.getElementById('session-lines-container');
+ container.innerHTML = '';
+ if (!lines.length) {
+ lines = [{ text: '', checked: false }, { text: '', checked: false }, { text: '', checked: false }, { text: '', checked: false }];
+ currentModalLines = lines;
+ }
+ lines.forEach((l, idx) => {
+ const row = document.createElement('div');
+ row.style.cssText = "display: flex; align-items: center; gap: 0.4rem;";
+ row.innerHTML = `
+ <input type="checkbox" ${l.checked ? 'checked' : ''} onchange="currentModalLines[${idx}].checked = this.checked" style="width: 22px; height: 22px;">
+ <input type="text" value="${esc(l.text)}" oninput="currentModalLines[${idx}].text = this.value" placeholder="Étape ${idx + 1}" class="form-control" style="margin-top:0; flex:1;">
+ <div style="display: flex; gap: 0.2rem; flex-shrink: 0;">
+ <button type="button" onclick="moveToTopSessionLine(${idx})" class="btn-icon-order" title="Remonter tout en haut">⤒</button>
+ <button type="button" onclick="moveSessionLine(${idx}, -1)" class="btn-icon-order" title="Monter">▲</button>
+ <button type="button" onclick="moveSessionLine(${idx}, 1)" class="btn-icon-order" title="Descendre">▼</button>
+ </div>
+ <button type="button" onclick="currentModalLines.splice(${idx}, 1); renderSessionLines(currentModalLines);" class="btn btn-danger btn-sm">✕</button>
+ `;
+ container.appendChild(row);
+ });
+ }
+
+ function moveToTopSessionLine(index) {
+ if (index <= 0 || index >= currentModalLines.length) return;
+ const [itemToMove] = currentModalLines.splice(index, 1);
+ currentModalLines.unshift(itemToMove);
+ renderSessionLines(currentModalLines);
+ }
+
+ function moveSessionLine(index, direction) {
+ const targetIdx = index + direction;
+ if (targetIdx < 0 || targetIdx >= currentModalLines.length) return;
+ const temp = currentModalLines[index];
+ currentModalLines[index] = currentModalLines[targetIdx];
+ currentModalLines[targetIdx] = temp;
+ renderSessionLines(currentModalLines);
+ }
+ function addSessionLineTop() { currentModalLines.unshift({ text: '', checked: false }); renderSessionLines(currentModalLines); }
+ function addSessionLineItem() { currentModalLines.push({ text: '', checked: false }); renderSessionLines(currentModalLines); }
+
+ function setSessionTimeInput(timeStr) {
+ const timeSelect = document.getElementById('session-time-select');
+ const timeCustom = document.getElementById('session-time-custom');
+ if (!timeStr) {
+ timeSelect.value = STANDARD_TIMES[0];
+ timeCustom.style.display = 'none';
+ timeCustom.value = '';
+ return;
+ }
+ const normalized = timeStr.replace(/\s+/g, '');
+ if (STANDARD_TIMES.includes(normalized)) {
+ timeSelect.value = normalized;
+ timeCustom.style.display = 'none';
+ timeCustom.value = '';
+ } else {
+ timeSelect.value = 'custom';
+ timeCustom.style.display = 'block';
+ timeCustom.value = timeStr;
+ }
+ }
+
+ function openAddSessionModal(d = null) {
+ populateClassDropdown();
+ document.getElementById('modal-session-title').innerText = "Ajouter une séance à l'Agenda";
+ document.getElementById('session-id').value = '';
+ document.getElementById('session-date').value = d || selectedAgendaDate;
+ setSessionTimeInput(STANDARD_TIMES[0]);
+ const validClasses = appData.classes.filter(c => c.name !== 'Pas cours/Vacances/Fériés');
+ if (validClasses.length > 0) {
+ document.getElementById('session-class').value = validClasses[0].name;
+ }
+ document.getElementById('session-title-input').value = '';
+ document.getElementById('session-homework').value = '';
+ currentModalLines = [{ text: '', checked: false }, { text: '', checked: false }, { text: '', checked: false }, { text: '', checked: false }];
+ renderSessionLines(currentModalLines);
+ updateSessionTextbookSidebar();
+ document.getElementById('modal-session').classList.add('open');
+ }
+
+ function openEditSessionModal(id) {
+ const s = appData.sessions.find(x => x.id === id);
+ if (!s) return;
+ populateClassDropdown();
+ document.getElementById('modal-session-title').innerText = "Modifier la séance";
+ document.getElementById('session-id').value = s.id;
+ document.getElementById('session-date').value = s.date;
+ setSessionTimeInput(s.time);
+ document.getElementById('session-class').value = s.className;
+ document.getElementById('session-title-input').value = s.title;
+ document.getElementById('session-homework').value = s.homework || '';
+ currentModalLines = (s.lines && s.lines.length) ? JSON.parse(JSON.stringify(s.lines)) : [{ text: s.content || '', checked: false }];
+ renderSessionLines(currentModalLines);
+ updateSessionTextbookSidebar();
+ document.getElementById('modal-session').classList.add('open');
+ }
+
+ function findPreviousSessionForForm() {
+ const c = document.getElementById('session-class').value;
+ const d = document.getElementById('session-date').value;
+ const currentId = document.getElementById('session-id').value;
+ const timeSelect = document.getElementById('session-time-select');
+ const currTimeStr = timeSelect.value === 'custom' ? document.getElementById('session-time-custom').value : timeSelect.value;
+ const currMin = getStartTimeMinutes(currTimeStr);
+
+ return appData.sessions
+ .filter(s => {
+ if (s.className !== c) return false;
+ if (currentId && s.id === currentId) return false;
+ if (s.date < d) return true;
+ if (s.date === d && getStartTimeMinutes(s.time) < currMin) return true;
+ return false;
+ })
+ .sort((a, b) => {
+ const cmpDate = b.date.localeCompare(a.date);
+ if (cmpDate !== 0) return cmpDate;
+ return getStartTimeMinutes(b.time) - getStartTimeMinutes(a.time);
+ })[0] || null;
+ }
+
+ function importPreviousSessionToAgenda() {
+ const prev = findPreviousSessionForForm();
+ if (prev) {
+ document.getElementById('session-title-input').value = prev.title || '';
+ if (prev.lines && Array.isArray(prev.lines) && prev.lines.length > 0) {
+ currentModalLines = JSON.parse(JSON.stringify(prev.lines));
+ } else if (prev.content) {
+ currentModalLines = [{ text: prev.content, checked: false }];
+ } else {
+ currentModalLines = [{ text: '', checked: false }];
+ }
+ if (prev.homework) {
+ document.getElementById('session-homework').value = prev.homework;
+ }
+ renderSessionLines(currentModalLines);
+ } else {
+ alert("Aucune séance précédente trouvée pour cette classe.");
+ }
+ }
+
+ function handleSaveSession(e) {
+ e.preventDefault();
+ const id = document.getElementById('session-id').value;
+ const timeVal = document.getElementById('session-time-select').value === 'custom' ? document.getElementById('session-time-custom').value : document.getElementById('session-time-select').value;
+ const obj = {
+ id: id || ('s_' + Date.now()),
+ date: document.getElementById('session-date').value,
+ time: timeVal,
+ className: document.getElementById('session-class').value,
+ title: document.getElementById('session-title-input').value,
+ lines: JSON.parse(JSON.stringify(currentModalLines)),
+ homework: document.getElementById('session-homework').value
+ };
+ if (id) {
+ const idx = appData.sessions.findIndex(x => x.id === id);
+ if (idx !== -1) appData.sessions[idx] = obj;
+ } else appData.sessions.push(obj);
+ saveData();
+ closeModal('modal-session');
+ }
+
+ function deleteSession(id) {
+ if (confirm("Supprimer ?")) { appData.sessions = appData.sessions.filter(s => s.id !== id); saveData(); }
+ }
+
+ function openMoveSessionModal(id, action) {
+ const s = appData.sessions.find(x => x.id === id);
+ if (!s) return;
+ document.getElementById('move-session-id').value = id;
+ document.getElementById('move-action-type').value = action;
+ document.getElementById('move-target-date').value = s.date;
+ document.getElementById('modal-move-session').classList.add('open');
+ }
+
+ function confirmMoveSession() {
+ const id = document.getElementById('move-session-id').value;
+ const action = document.getElementById('move-action-type').value;
+ const target = document.getElementById('move-target-date').value;
+ const s = appData.sessions.find(x => x.id === id);
+ if (s && target) {
+ if (action === 'copy') appData.sessions.push({ ...s, id: 's_' + Date.now(), date: target });
+ else s.date = target;
+ saveData();
+ closeModal('modal-move-session');
+ }
+ }
+
+ function renderClasses() {
+ document.getElementById('classes-grid').innerHTML = appData.classes.map((c, idx) => `
+ <div class="card" style="border-top:5px solid ${c.color}">
+ <div style="display:flex; justify-content:space-between;">
+ <span class="badge-class" style="background:${c.color}">${esc(c.level)}</span>
+ <button onclick="openEditClassModal('${c.id}')" class="btn btn-secondary btn-sm">✏️</button>
+ </div>
+ <h3 style="margin-top:0.75rem;">${esc(c.name)}</h3>
+ <p style="color:var(--text-muted);">${esc(c.notes)}</p>
+ </div>
+ `).join('');
+ }
+
+ function openAddClassModal() {
+ document.getElementById('class-id').value = '';
+ document.getElementById('class-name').value = '';
+ document.getElementById('class-notes').value = '';
+ document.getElementById('modal-class').classList.add('open');
+ }
+
+ function openEditClassModal(id) {
+ const c = appData.classes.find(x => x.id === id);
+ if (!c) return;
+ document.getElementById('class-id').value = c.id;
+ document.getElementById('class-name').value = c.name;
+ document.getElementById('class-level').value = c.level;
+ document.getElementById('class-color').value = c.color;
+ document.getElementById('class-notes').value = c.notes || '';
+ document.getElementById('modal-class').classList.add('open');
+ }
+
+ function handleSaveClass(e) {
+ e.preventDefault();
+ const id = document.getElementById('class-id').value;
+ const old = id ? appData.classes.find(x => x.id === id) : null;
+ const obj = {
+ id: id || ('c_' + Date.now()),
+ name: document.getElementById('class-name').value,
+ level: document.getElementById('class-level').value,
+ color: document.getElementById('class-color').value,
+ notes: document.getElementById('class-notes').value,
+ students: old ? (old.students || []) : []
+ };
+ if (old) {
+ if (old.name !== obj.name) {
+ [appData.sessions, appData.textbook, appData.milestones].forEach(list =>
+ (list || []).forEach(x => { if (x.className === old.name) x.className = obj.name; }));
+ Object.values(appData.templates || {}).forEach(t =>
+ Object.values(t).forEach(slot => { if (slot.className === old.name) slot.className = obj.name; }));
+ }
+ appData.classes[appData.classes.indexOf(old)] = obj;
+ } else appData.classes.push(obj);
+ saveData();
+ closeModal('modal-class');
+ }
+
+ function openSyncModal() {
+ document.getElementById('sync-last-update-text').innerText = new Date(appData.lastUpdated).toLocaleString('fr-FR');
+ document.getElementById('modal-sync').classList.add('open');
+ }
+
+ function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+ function exportDataToJSON() {
+ const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+ const a = document.createElement('a');
+ a.href = dataStr; a.download = `agenda_stephane_${getTodayDateStr()}.json`;
+ a.click();
+ }
+
+ function importDataFromJSON(e) {
+ const file = e.target.files[0];
+ if (!file) return;
+ const reader = new FileReader();
+ reader.onload = evt => {
+ try {
+ const d = JSON.parse(evt.target.result);
+ if (!Array.isArray(d.classes) || !Array.isArray(d.sessions)) throw new Error('format');
+ d.textbook ||= []; d.milestones ||= []; d.templates ||= { paire: {}, impaire: {} };
+ appData = d;
+ saveData();
+ closeModal('modal-sync');
+ alert("Synchronisé !");
+ } catch (err) { alert("Fichier invalide : import annulé, données conservées."); }
+ };
+ reader.readAsText(file);
+ e.target.value = '';
+ }
+
+ function updateSessionTextbookSidebar() {
+ const sidebar = document.getElementById('session-textbook-sidebar');
+ const c = document.getElementById('session-class').value;
+ const entries = (appData.textbook || []).filter(e => e.className === c);
+ if (!entries.length) {
+ sidebar.innerHTML = `<h4>Cahier de texte</h4><p style="color:var(--text-muted);">Aucune entrée.</p>`;
+ } else {
+ entries.sort((a,b) => new Date(b.date) - new Date(a.date));
+ const latest = entries[0];
+ sidebar.innerHTML = `
+ <h4>Dernier cours (${esc(c)})</h4>
+ <p><b>${esc(latest.title)}</b></p>
+ <p style="font-size:0.95rem; white-space:pre-line;">${esc(latest.content)}</p>
+ `;
+ }
+
+ const prevPreview = document.getElementById('session-previous-preview-content');
+ if (!prevPreview) return;
+ const prevSession = findPreviousSessionForForm();
+
+ if (!prevSession) {
+ prevPreview.innerHTML = `<p style="color:var(--text-muted);">Aucune séance précédente trouvée pour cette classe.</p>`;
+ } else {
+ let linesSummary = '';
+ if (prevSession.lines && Array.isArray(prevSession.lines) && prevSession.lines.length) {
+ linesSummary = prevSession.lines
+ .filter(l => l.text && l.text.trim() !== '')
+ .map(l => {
+ const badge = formatRangeBadge(l);
+ return `<div>${l.checked ? '✓' : '•'} ${esc(l.text)}${badge ? ` <span class="badge-subitems">${badge}</span>` : ''}</div>`;
+ })
+ .join('');
+ } else if (prevSession.content) {
+ linesSummary = `<div style="white-space:pre-line;">${esc(prevSession.content)}</div>`;
+ }
+ prevPreview.innerHTML = `
+ <p style="margin-bottom:0.25rem;"><b>Date :</b> ${formatDateShortFr(prevSession.date)} (${esc(prevSession.time)})</p>
+ <p style="margin-bottom:0.35rem;"><b>Titre :</b> ${esc(prevSession.title)}</p>
+ ${linesSummary ? `<div style="font-size:0.9rem; display:flex; flex-direction:column; gap:0.2rem; margin-top:0.35rem; padding-top:0.35rem; border-top:1px solid var(--border);">${linesSummary}</div>` : ''}
+ ${prevSession.homework ? `<div style="margin-top:0.4rem; font-size:0.88rem; color:#92400e; background:#fffbeb; padding:0.3rem 0.5rem; border-radius:0.3rem;">📚 ${esc(prevSession.homework)}</div>` : ''}
+ `;
+ }
+ }
+
+ window.addEventListener('DOMContentLoaded', () => { restoreUIState() || refreshCurrentView(); });
+ </script>
+</body>
+</html>
