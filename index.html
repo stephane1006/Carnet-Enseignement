@@ -4,6 +4,10 @@
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <title>Carnet Stéphane - AgendaEnseignant</title>
+ <link rel="manifest" href="manifest.json">
+ <link rel="icon" href="icon-192.png">
+ <link rel="apple-touch-icon" href="icon-192.png">
+ <meta name="theme-color" content="#312e81">
  <style>
  :root {
  --primary: #312e81;
@@ -1088,13 +1092,142 @@
 
  function saveData() {
  appData.lastUpdated = new Date().toISOString();
+ stampChanges();
  try {
  localStorage.setItem('stephane_teacher_app_data', JSON.stringify(appData));
  } catch (e) {
  memoryFallback = appData;
  }
  refreshCurrentView();
+ scheduleSync();
  }
+
+  // ===== Synchronisation Google Drive (dossier privé de l'application) + hors ligne =====
+ const GOOGLE_CLIENT_ID = '260210286502-kfqbjge0qsvegl21rdp6q016pn9bh559.apps.googleusercontent.com';
+ const DRIVE_FILE = 'agenda.json';
+ const DATA_KEY = 'stephane_teacher_app_data';
+ const COLS = ['classes', 'sessions', 'textbook', 'milestones'];
+ let driveToken = null, tokenExp = 0, tokenClient = null, syncing = false, syncAgain = false, syncTimer = null;
+
+ function persistLocal() { try { localStorage.setItem(DATA_KEY, JSON.stringify(appData)); } catch (e) {} }
+ const sigOf = it => { const { updatedAt, ...r } = it; return JSON.stringify(r); };
+
+ // Date de dernière modification par élément + suppressions mémorisées, pour fusionner sans rien perdre
+ function stampChanges() {
+ const now = Date.now();
+ const m = appData._sync ||= { sig: {}, tomb: {}, tplAt: 0, tplSig: '' };
+ const seen = new Set();
+ COLS.forEach(c => (appData[c] || []).forEach(it => {
+ const k = c + ':' + it.id; seen.add(k);
+ const sg = sigOf(it);
+ if (m.sig[k] !== sg) { it.updatedAt = now; m.sig[k] = sg; }
+ delete m.tomb[k];
+ }));
+ Object.keys(m.sig).forEach(k => { if (!seen.has(k)) { delete m.sig[k]; m.tomb[k] = now; } });
+ const ts = JSON.stringify(appData.templates);
+ if (m.tplSig !== ts) { m.tplSig = ts; m.tplAt = now; }
+ }
+
+ function mergeData(a, b) {
+ const ma = a._sync, mb = b._sync || { tomb: {}, tplAt: 0 };
+ const limit = Date.now() - 90 * 86400000;
+ const tomb = {};
+ [mb.tomb || {}, ma.tomb].forEach(t => Object.entries(t).forEach(([k, v]) => { if (v > limit) tomb[k] = Math.max(tomb[k] || 0, v); }));
+ const out = { ...a };
+ COLS.forEach(c => {
+ const map = new Map();
+ [...(b[c] || []), ...(a[c] || [])].forEach(it => {
+ const o = map.get(it.id);
+ if (!o || (it.updatedAt || 0) >= (o.updatedAt || 0)) map.set(it.id, it);
+ });
+ out[c] = [...map.values()].filter(it => !(tomb[c + ':' + it.id] > (it.updatedAt || 0)));
+ });
+ out.templates = (mb.tplAt || 0) > (ma.tplAt || 0) ? b.templates : a.templates;
+ out.lastUpdated = [a.lastUpdated, b.lastUpdated].filter(Boolean).sort().pop();
+ const sig = {};
+ COLS.forEach(c => out[c].forEach(it => { sig[c + ':' + it.id] = sigOf(it); }));
+ out._sync = { sig, tomb, tplAt: Math.max(ma.tplAt || 0, mb.tplAt || 0), tplSig: JSON.stringify(out.templates) };
+ return out;
+ }
+
+ async function drive(path, opts = {}, upload = false) {
+ const base = upload ? 'https://www.googleapis.com/upload/drive/v3/' : 'https://www.googleapis.com/drive/v3/';
+ const r = await fetch(base + path, { ...opts, headers: { Authorization: 'Bearer ' + driveToken, ...(opts.headers || {}) } });
+ if (r.status === 401) { driveToken = null; throw new Error('auth'); }
+ if (!r.ok) throw new Error('drive ' + r.status);
+ return r;
+ }
+
+ async function syncNow() {
+ if (!navigator.onLine) return setBadge('offline');
+ if (!driveToken || Date.now() > tokenExp) return ensureToken();
+ if (syncing) { syncAgain = true; return; }
+ syncing = true; setBadge('sync');
+ try {
+ const q = encodeURIComponent("name='" + DRIVE_FILE + "'");
+ const list = await (await drive('files?spaces=appDataFolder&fields=files(id)&q=' + q)).json();
+ const fid = list.files && list.files[0] && list.files[0].id;
+ let remote = null, remoteStr = '';
+ if (fid) { remoteStr = await (await drive('files/' + fid + '?alt=media')).text(); remote = JSON.parse(remoteStr); }
+ stampChanges();
+ const merged = remote && Array.isArray(remote.sessions) ? mergeData(appData, remote) : appData;
+ const mStr = JSON.stringify(merged);
+ if (mStr !== JSON.stringify(appData)) { appData = merged; refreshCurrentView(); }
+ persistLocal();
+ if (mStr !== remoteStr) {
+ if (fid) await drive('files/' + fid + '?uploadType=media', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: mStr }, true);
+ else {
+ const meta = JSON.stringify({ name: DRIVE_FILE, parents: ['appDataFolder'] });
+ await drive('files?uploadType=multipart', { method: 'POST', headers: { 'Content-Type': 'multipart/related; boundary=agb' },
+ body: '--agb\r\nContent-Type: application/json\r\n\r\n' + meta + '\r\n--agb\r\nContent-Type: application/json\r\n\r\n' + mStr + '\r\n--agb--' }, true);
+ }
+ }
+ setBadge('ok');
+ } catch (e) { setBadge(navigator.onLine ? (driveToken ? 'error' : 'login') : 'offline'); }
+ finally { syncing = false; if (syncAgain) { syncAgain = false; scheduleSync(); } }
+ }
+ function scheduleSync() { setBadge(driveToken ? 'pending' : null); clearTimeout(syncTimer); syncTimer = setTimeout(syncNow, 3000); }
+
+ function initAuth() {
+ if (tokenClient || !(window.google && google.accounts)) return;
+ tokenClient = google.accounts.oauth2.initTokenClient({
+ client_id: GOOGLE_CLIENT_ID,
+ scope: 'https://www.googleapis.com/auth/drive.appdata',
+ callback: r => {
+ if (r && r.access_token) { driveToken = r.access_token; tokenExp = Date.now() + (r.expires_in - 60) * 1000; localStorage.setItem('agenda_sync_on', '1'); syncNow(); }
+ else setBadge('login');
+ },
+ error_callback: () => setBadge('login')
+ });
+ ensureToken();
+ }
+ function ensureToken() {
+ if (!tokenClient) return setBadge(navigator.onLine ? 'login' : 'offline');
+ if (localStorage.getItem('agenda_sync_on')) tokenClient.requestAccessToken({ prompt: '' });
+ else setBadge('login');
+ }
+ function badgeClick() {
+ if (!tokenClient) return alert("Connexion Google indisponible (hors ligne ?).");
+ if (driveToken && Date.now() < tokenExp) return syncNow();
+ tokenClient.requestAccessToken({ prompt: localStorage.getItem('agenda_sync_on') ? '' : 'consent' });
+ }
+ function setBadge(state) {
+ const b = document.getElementById('sync-badge');
+ if (!b || !state) return;
+ const t = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+ b.textContent = { login: '☁️ Se connecter pour synchroniser', sync: '🔄 Synchronisation…', pending: '☁️ Modifications à envoyer…',
+ ok: '☁️ Synchronisé ' + t, offline: '📴 Hors ligne · envoi au retour du réseau', error: '⚠️ Erreur · toucher pour réessayer' }[state];
+ }
+
+ // Une autre fenêtre/onglet a modifié les données : on les recharge au lieu de les écraser
+ window.addEventListener('storage', e => {
+ if (e.key === DATA_KEY && e.newValue) { try { appData = JSON.parse(e.newValue); refreshCurrentView(); } catch (_) {} }
+ });
+ window.addEventListener('online', syncNow);
+ document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncNow(); });
+ setInterval(syncNow, 5 * 60 * 1000);
+ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+
 
  function resetAllApplicationData() {
  if (confirm("Attention cela va supprimer toutes les données !")) {
@@ -2249,5 +2382,7 @@ const contentContainer = document.getElementById('fs-session-content');
 
  window.addEventListener('DOMContentLoaded', () => { restoreUIState() || refreshCurrentView(); });
  </script>
+<div id="sync-badge" onclick="badgeClick()" style="position:fixed;left:10px;bottom:10px;z-index:60;background:#1e293b;color:#fff;font-size:12px;padding:6px 12px;border-radius:999px;opacity:.9;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3)">☁️ Synchronisation…</div>
+<script src="https://accounts.google.com/gsi/client" async defer onload="initAuth()"></script>
 </body>
 </html>
