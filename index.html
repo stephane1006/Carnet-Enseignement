@@ -2247,12 +2247,32 @@ const contentContainer = document.getElementById('fs-session-content');
  }
  }
 
+ function deleteClass(id) {
+ const c = appData.classes.find(x => x.id === id);
+ if (!c || id === 'c_default') return;
+ const nS = appData.sessions.filter(x => x.className === c.name).length;
+ const nT = (appData.textbook || []).filter(x => x.className === c.name).length;
+ const nM = (appData.milestones || []).filter(x => x.className === c.name).length;
+ if (!confirm(`Supprimer la classe « ${c.name} » ?\n\nSeront aussi supprimés : ${nS} séance(s), ${nT} entrée(s) du cahier de texte, ${nM} jalon(s) et ses créneaux de l'agenda type.\n\nCette action est définitive.`)) return;
+ appData.classes = appData.classes.filter(x => x.id !== id);
+ appData.sessions = appData.sessions.filter(x => x.className !== c.name);
+ appData.textbook = (appData.textbook || []).filter(x => x.className !== c.name);
+ appData.milestones = (appData.milestones || []).filter(x => x.className !== c.name);
+ Object.values(appData.templates || {}).forEach(t => Object.keys(t).forEach(k => { if (t[k] && t[k].className === c.name) delete t[k]; }));
+ if (activeGanttClass === c.name) activeGanttClass = null;
+ if (activeTextbookClass === c.name) activeTextbookClass = null;
+ saveData();
+ }
+
  function renderClasses() {
  document.getElementById('classes-grid').innerHTML = appData.classes.map((c, idx) => `
  <div class="card" style="border-top:5px solid ${c.color}">
  <div style="display:flex; justify-content:space-between;">
  <span class="badge-class" style="background:${c.color}">${esc(c.level)}</span>
+ <span style="display:flex; gap:0.4rem;">
  <button onclick="openEditClassModal('${c.id}')" class="btn btn-secondary btn-sm">✏️</button>
+ ${c.id === 'c_default' ? '' : `<button onclick="deleteClass('${c.id}')" class="btn btn-secondary btn-sm" title="Supprimer la classe">🗑️</button>`}
+ </span>
  </div>
  <h3 style="margin-top:0.75rem;">${esc(c.name)}</h3>
  <p style="color:var(--text-muted);">${esc(c.notes)}</p>
