@@ -1108,6 +1108,7 @@
  const DATA_KEY = 'stephane_teacher_app_data';
  const COLS = ['classes', 'sessions', 'textbook', 'milestones'];
  let driveToken = null, tokenExp = 0, tokenClient = null, syncing = false, syncAgain = false, syncTimer = null;
+ try { const t = JSON.parse(localStorage.getItem('agenda_tok') || 'null'); if (t && t.exp > Date.now()) { driveToken = t.tok; tokenExp = t.exp; } } catch (e) {}
 
  function persistLocal() { try { localStorage.setItem(DATA_KEY, JSON.stringify(appData)); } catch (e) {} }
  const sigOf = it => { const { updatedAt, ...r } = it; return JSON.stringify(r); };
@@ -1154,14 +1155,14 @@
  async function drive(path, opts = {}, upload = false) {
  const base = upload ? 'https://www.googleapis.com/upload/drive/v3/' : 'https://www.googleapis.com/drive/v3/';
  const r = await fetch(base + path, { ...opts, headers: { Authorization: 'Bearer ' + driveToken, ...(opts.headers || {}) } });
- if (r.status === 401) { driveToken = null; throw new Error('auth'); }
+ if (r.status === 401) { driveToken = null; localStorage.removeItem('agenda_tok'); throw new Error('auth'); }
  if (!r.ok) throw new Error('drive ' + r.status);
  return r;
  }
 
  async function syncNow() {
  if (!navigator.onLine) return setBadge('offline');
- if (!driveToken || Date.now() > tokenExp) return ensureToken();
+ if (!driveToken || Date.now() > tokenExp) return setBadge('login');
  if (syncing) { syncAgain = true; return; }
  syncing = true; setBadge('sync');
  try {
@@ -1195,15 +1196,24 @@
  client_id: GOOGLE_CLIENT_ID,
  scope: 'https://www.googleapis.com/auth/drive.appdata',
  callback: r => {
- if (r && r.access_token) { driveToken = r.access_token; tokenExp = Date.now() + (r.expires_in - 60) * 1000; localStorage.setItem('agenda_sync_on', '1'); syncNow(); }
+ if (r && r.access_token) { driveToken = r.access_token; tokenExp = Date.now() + (r.expires_in - 60) * 1000; localStorage.setItem('agenda_sync_on', '1'); localStorage.setItem('agenda_tok', JSON.stringify({ tok: driveToken, exp: tokenExp })); syncNow(); }
  else setBadge('login');
  },
  error_callback: () => setBadge('login')
  });
- ensureToken();
+ if (driveToken && Date.now() < tokenExp) syncNow(); else ensureToken();
  }
- function ensureToken() {
+ async function reachable() {
+ if (!navigator.onLine) return false;
+ try {
+ const c = new AbortController(); setTimeout(() => c.abort(), 3000);
+ await fetch('https://www.gstatic.com/generate_204', { mode: 'no-cors', cache: 'no-store', signal: c.signal });
+ return true;
+ } catch (e) { return false; }
+ }
+ async function ensureToken() {
  if (!tokenClient) return setBadge(navigator.onLine ? 'login' : 'offline');
+ if (!(await reachable())) return setBadge('offline');
  if (localStorage.getItem('agenda_sync_on')) tokenClient.requestAccessToken({ prompt: '' });
  else setBadge('login');
  }
@@ -1216,7 +1226,7 @@
  const b = document.getElementById('sync-badge');
  if (!b || !state) return;
  const t = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
- b.textContent = { login: '☁️ Se connecter pour synchroniser', sync: '🔄 Synchronisation…', pending: '☁️ Modifications à envoyer…',
+ b.textContent = { login: '☁️ Toucher pour synchroniser', sync: '🔄 Synchronisation…', pending: '☁️ Modifications à envoyer…',
  ok: '☁️ Synchronisé ' + t, offline: '📴 Hors ligne · envoi au retour du réseau', error: '⚠️ Erreur · toucher pour réessayer' }[state];
  }
 
@@ -1224,7 +1234,8 @@
  window.addEventListener('storage', e => {
  if (e.key === DATA_KEY && e.newValue) { try { appData = JSON.parse(e.newValue); refreshCurrentView(); } catch (_) {} }
  });
- window.addEventListener('online', syncNow);
+ window.addEventListener('online', () => (driveToken && Date.now() < tokenExp ? syncNow() : ensureToken()));
+ if (driveToken) setTimeout(syncNow, 1500);
  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncNow(); });
  setInterval(syncNow, 5 * 60 * 1000);
  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
