@@ -1141,6 +1141,7 @@
  if (!o || (it.updatedAt || 0) >= (o.updatedAt || 0)) map.set(it.id, it);
  });
  out[c] = [...map.values()].filter(it => !(tomb[c + ':' + it.id] > (it.updatedAt || 0)));
+ if (c === 'classes') out[c].sort((x, y) => (x.order ?? 1e9) - (y.order ?? 1e9));
  });
  out.templates = (mb.tplAt || 0) > (ma.tplAt || 0) ? b.templates : a.templates;
  out.lastUpdated = [a.lastUpdated, b.lastUpdated].filter(Boolean).sort().pop();
@@ -2247,6 +2248,15 @@ const contentContainer = document.getElementById('fs-session-content');
  }
  }
 
+ function moveClass(id, dir) {
+ const list = appData.classes;
+ const i = list.findIndex(x => x.id === id), j = i + dir;
+ if (i < 0 || j < 0 || j >= list.length) return;
+ [list[i], list[j]] = [list[j], list[i]];
+ list.forEach((c, k) => { c.order = k; });
+ saveData();
+ }
+
  function deleteClass(id) {
  const c = appData.classes.find(x => x.id === id);
  if (!c || id === 'c_default') return;
@@ -2270,6 +2280,8 @@ const contentContainer = document.getElementById('fs-session-content');
  <div style="display:flex; justify-content:space-between;">
  <span class="badge-class" style="background:${c.color}">${esc(c.level)}</span>
  <span style="display:flex; gap:0.4rem;">
+ <button onclick="moveClass('${c.id}', -1)" class="btn btn-secondary btn-sm" title="Déplacer avant" ${idx === 0 ? 'disabled' : ''}>◀</button>
+ <button onclick="moveClass('${c.id}', 1)" class="btn btn-secondary btn-sm" title="Déplacer après" ${idx === appData.classes.length - 1 ? 'disabled' : ''}>▶</button>
  <button onclick="openEditClassModal('${c.id}')" class="btn btn-secondary btn-sm">✏️</button>
  ${c.id === 'c_default' ? '' : `<button onclick="deleteClass('${c.id}')" class="btn btn-secondary btn-sm" title="Supprimer la classe">🗑️</button>`}
  </span>
@@ -2310,6 +2322,7 @@ const contentContainer = document.getElementById('fs-session-content');
  notes: document.getElementById('class-notes').value,
  students: old ? (old.students || []) : []
  };
+ if (old && old.order !== undefined) obj.order = old.order; else if (!old) obj.order = appData.classes.length;
  if (old) {
  if (old.name !== obj.name) {
  [appData.sessions, appData.textbook, appData.milestones].forEach(list =>
