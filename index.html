@@ -84,9 +84,17 @@
  background-color: white;
  border-bottom: 1px solid var(--border);
  display: flex;
- justify-content: center;
  gap: 0.75rem;
  overflow-x: auto;
+ -webkit-overflow-scrolling: touch;
+ scrollbar-width: none;
+ }
+ nav::-webkit-scrollbar { display: none; }
+ /* centré s'il y a de la place, sinon défilable jusqu'aux deux extrémités */
+ nav .nav-tab:first-child { margin-left: auto; }
+ nav .nav-tab:last-child { margin-right: auto; }
+ @media (max-width: 700px) {
+ .nav-tab { padding: 0.85rem 0.9rem; font-size: 1rem; }
  }
 
  .nav-tab {
@@ -1220,6 +1228,7 @@
  });
  if (driveToken && Date.now() < tokenExp) syncNow(); else ensureToken();
  }
+ const hintOpt = () => { const h = localStorage.getItem('agenda_google_hint'); return h ? { hint: h } : {}; };
  async function reachable() {
  if (!navigator.onLine) return false;
  try {
@@ -1231,13 +1240,17 @@
  async function ensureToken() {
  if (!tokenClient) return setBadge(navigator.onLine ? 'login' : 'offline');
  if (!(await reachable())) return setBadge('offline');
- if (localStorage.getItem('agenda_sync_on')) tokenClient.requestAccessToken({ prompt: '' });
+ if (localStorage.getItem('agenda_sync_on')) tokenClient.requestAccessToken({ prompt: '', ...hintOpt() });
  else setBadge('login');
  }
  function badgeClick() {
  if (!tokenClient) return alert("Connexion Google indisponible (hors ligne ?).");
  if (driveToken && Date.now() < tokenExp) return syncNow();
- tokenClient.requestAccessToken({ prompt: localStorage.getItem('agenda_sync_on') ? '' : 'consent' });
+ if (!localStorage.getItem('agenda_google_hint')) {
+ const h = (prompt("Adresse Google à utiliser pour la synchronisation (elle sera mémorisée) :") || '').trim().toLowerCase();
+ if (h.includes('@')) localStorage.setItem('agenda_google_hint', h);
+ }
+ tokenClient.requestAccessToken({ prompt: localStorage.getItem('agenda_sync_on') ? '' : 'consent', ...hintOpt() });
  }
  function setBadge(state) {
  const b = document.getElementById('sync-badge');
@@ -1319,7 +1332,9 @@
  if (tab) tab.classList.remove('active-tab');
  });
  document.getElementById(`sec-${tabName}`).classList.add('active');
- document.getElementById(`tab-${tabName}`).classList.add('active-tab');
+ const activeBtn = document.getElementById(`tab-${tabName}`);
+ activeBtn.classList.add('active-tab');
+ activeBtn.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
  activeTab = tabName;
  refreshCurrentView();
 
