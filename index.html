@@ -876,11 +876,7 @@
  </div>
  <div>
  <label style="font-size: 1rem; font-weight: 600;">Contenu réellement effectué</label>
- <textarea id="textbook-content" rows="4" placeholder="Détail..." class="form-control"></textarea>
- </div>
- <div>
- <label style="font-size: 1rem; font-weight: 600;">Devoirs donnés</label>
- <textarea id="textbook-homework" rows="2" placeholder="Travail..." class="form-control"></textarea>
+ <textarea id="textbook-content" rows="12" placeholder="Détail..." class="form-control" style="min-height:45vh; resize:vertical;"></textarea>
  </div>
  <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.75rem;">
  <button type="button" onclick="closeModal('modal-textbook')" class="btn btn-secondary">Annuler</button>
@@ -1947,7 +1943,7 @@
  .map(l => {
  const expanded = expandRangeItems(l.rangeStart, l.rangeEnd);
  const suffixItems = expanded.length > 0 ? ' - ' + expanded.join(' - ') : '';
- const baseLine = `${esc(l.text)}${suffixItems}`;
+ const baseLine = `${l.text}${suffixItems}`;
  return l.checked ? `${baseLine} — FAIT et CORRIGE` : baseLine;
  })
  .join('\n');
@@ -1955,12 +1951,12 @@
 
  function openAddTextbookModal() {
  populateTextbookClassDropdown();
+ if (activeTextbookClass) document.getElementById('textbook-class').value = activeTextbookClass;
  document.getElementById('textbook-id').value = '';
  document.getElementById('textbook-date').value = getTodayDateStr();
  document.getElementById('textbook-title').value = '';
  document.getElementById('textbook-content').value = '';
- document.getElementById('textbook-homework').value = '';
- updateAgendaPreviewInTextbookModal();
+  updateAgendaPreviewInTextbookModal();
  document.getElementById('modal-textbook').classList.add('open');
  }
 
@@ -1973,8 +1969,7 @@
  document.getElementById('textbook-class').value = entry.className;
  document.getElementById('textbook-title').value = entry.title;
  document.getElementById('textbook-content').value = entry.content || '';
- document.getElementById('textbook-homework').value = entry.homework || '';
- updateAgendaPreviewInTextbookModal();
+  updateAgendaPreviewInTextbookModal();
  document.getElementById('modal-textbook').classList.add('open');
  }
 
@@ -1987,7 +1982,7 @@
  className: document.getElementById('textbook-class').value,
  title: document.getElementById('textbook-title').value,
  content: document.getElementById('textbook-content').value,
- homework: document.getElementById('textbook-homework').value
+ homework: (id && (appData.textbook || []).find(x => x.id === id) || {}).homework || ''
  };
  if (!appData.textbook) appData.textbook = [];
  if (id) {
