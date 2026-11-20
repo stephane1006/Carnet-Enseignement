@@ -210,6 +210,20 @@
  background: #e2e8f0;
  }
 
+ .hw-card {
+ background-color: #f8fafc;
+ border: 1px solid var(--border);
+ border-left-width: 6px;
+ border-radius: 0 0.5rem 0.5rem 0;
+ padding: 1.25rem;
+ margin-bottom: 0.85rem;
+ display: flex;
+ flex-direction: column;
+ gap: 0.4rem;
+ -webkit-user-select: text;
+ user-select: text;
+ }
+
  .session-card {
  background-color: #f8fafc;
  border: 1px solid var(--border);
@@ -528,7 +542,7 @@
  <nav>
  <button onclick="switchTab('agenda')" id="tab-agenda" class="nav-tab active-tab">📅 Agenda</button>
  <button onclick="switchTab('textbook')" id="tab-textbook" class="nav-tab">📖 Cahier de texte</button>
- <button onclick="switchTab('homework')" id="tab-homework" class="nav-tab">📝 Devoirs</button>
+ <button onclick="switchTab('homework')" id="tab-homework" class="nav-tab">📚 Devoirs</button>
  <button onclick="switchTab('gantt')" id="tab-gantt" class="nav-tab">📊 Gantt</button>
  <button onclick="switchTab('classes')" id="tab-classes" class="nav-tab">👥 Classes</button>
  <button onclick="switchTab('template')" id="tab-template" class="nav-tab">📋 Agenda type</button>
@@ -1468,13 +1482,13 @@
  if (!items.length && !free) return '';
  const cls = appData.classes.find(c => c.name === x.className) || { color: '#64748b' };
  return `
- <div class="session-card" onclick="openSessionFullscreen('${x.id}')" style="border-left-color:${cls.color}; padding:1.25rem; margin-bottom:0.85rem;">
+ <div class="hw-card" style="border-left-color:${cls.color};">
  <div class="session-header"><div>
  <span class="badge-class" style="background:${cls.color}">${esc(x.className)}</span>
  <span class="time-text">⏱ ${esc(x.time)}</span>
  </div></div>
  <div style="font-weight:bold; font-size:1.1rem;">${esc(x.title)}</div>
- ${items.map(l => { const b = formatRangeBadge(l); return `<div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap; font-size:1.15rem; margin-top:0.35rem;"><span>📝</span><span>${esc(l.text)}</span>${b ? `<span class="badge-subitems">${b}</span>` : ''}</div>`; }).join('')}
+ ${items.map(l => { const b = formatRangeBadge(l); return `<div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap; font-size:1.15rem; margin-top:0.35rem;"><span>${esc(l.text)}</span>${b ? `<span class="badge-subitems">${b}</span>` : ''}</div>`; }).join('')}
  ${free ? `<div style="font-size:1.05rem; background:#fffbeb; padding:0.35rem 0.75rem; border-radius:0.25rem; color:#92400e; white-space:pre-line; margin-top:0.5rem;">📚 ${esc(free)}</div>` : ''}
  </div>`;
  }).join('');
@@ -1507,7 +1521,7 @@
  return `
  <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
  <span style="color:${l.checked ? '#059669' : 'var(--text-muted)'}; font-weight:bold;">${l.checked ? '✓' : '•'}</span>
- <span style="${l.checked ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${esc(l.text)}${l.homework ? ' 📝' : ''}</span>
+ <span style="${l.checked ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${esc(l.text)}${l.homework ? ' (devoir)' : ''}</span>
  ${rangeBadge ? `<span class="badge-subitems">${rangeBadge}</span>` : ''}
  </div>
  `;
