@@ -528,6 +528,7 @@
  <nav>
  <button onclick="switchTab('agenda')" id="tab-agenda" class="nav-tab active-tab">📅 Agenda</button>
  <button onclick="switchTab('textbook')" id="tab-textbook" class="nav-tab">📖 Cahier de texte</button>
+ <button onclick="switchTab('homework')" id="tab-homework" class="nav-tab">📝 Devoirs</button>
  <button onclick="switchTab('gantt')" id="tab-gantt" class="nav-tab">📊 Gantt</button>
  <button onclick="switchTab('classes')" id="tab-classes" class="nav-tab">👥 Classes</button>
  <button onclick="switchTab('template')" id="tab-template" class="nav-tab">📋 Agenda type</button>
@@ -590,6 +591,20 @@
 <div id="textbook-class-tabs" style="display: flex; gap: 0.75rem; border-bottom: 2px solid var(--border); padding-bottom: 1rem; margin-bottom: 1.25rem; overflow-x: auto;"></div>
  <div id="textbook-sessions-container" style="display: flex; flex-direction: column; gap: 1.25rem;"></div>
  </div>
+ </section>
+
+ <!-- DEVOIRS -->
+ <section id="sec-homework" class="section">
+ <div class="card" style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+ <div style="display:flex; align-items:center; gap:0.35rem;">
+ <button onclick="changeHomeworkDate(-1)" class="btn btn-secondary">◀</button>
+ <input type="date" id="homework-date-picker" onchange="setHomeworkDate(this.value)" class="form-control" style="width:auto;">
+ <button onclick="changeHomeworkDate(1)" class="btn btn-secondary">▶</button>
+ </div>
+ <button onclick="setHomeworkDate(getTodayDateStr())" class="btn btn-secondary btn-sm">Aujourd'hui</button>
+ </div>
+ <h3 id="homework-day-title" style="margin:0.5rem 0.25rem;"></h3>
+ <div id="homework-list"></div>
  </section>
 
  <!-- 3. DIAGRAMME DE GANTT -->
@@ -1325,7 +1340,7 @@
  }
 
  function switchTab(tabName) {
- ['agenda', 'textbook', 'gantt', 'classes', 'template'].forEach(t => {
+ ['agenda', 'textbook', 'homework', 'gantt', 'classes', 'template'].forEach(t => {
  const sec = document.getElementById(`sec-${t}`);
  const tab = document.getElementById(`tab-${t}`);
  if (sec) sec.classList.remove('active');
@@ -1345,7 +1360,7 @@
 
  let activeTab = 'agenda';
  function refreshCurrentView() {
- ({ agenda: renderAgenda, textbook: renderTextbook, gantt: renderGantt, classes: renderClasses, template: renderTemplateEditor })[activeTab]();
+ ({ agenda: renderAgenda, textbook: renderTextbook, homework: renderHomework, gantt: renderGantt, classes: renderClasses, template: renderTemplateEditor })[activeTab]();
  saveUIState();
  }
 
@@ -1436,6 +1451,36 @@
  }
  }
 
+ function setHomeworkDate(v) { if (v) { selectedAgendaDate = v; renderHomework(); } }
+ function changeHomeworkDate(days) {
+ const d = parseDate(selectedAgendaDate);
+ d.setDate(d.getDate() + days);
+ setHomeworkDate(toISO(d));
+ }
+ function renderHomework() {
+ document.getElementById('homework-date-picker').value = selectedAgendaDate;
+ document.getElementById('homework-day-title').textContent = formatDateFullFr(selectedAgendaDate);
+ const day = appData.sessions.filter(x => x.date === selectedAgendaDate)
+ .sort((a, b) => getStartTimeMinutes(a.time) - getStartTimeMinutes(b.time));
+ const html = day.map(x => {
+ const items = (x.lines || []).filter(l => l.homework && l.text && l.text.trim());
+ const free = (x.homework || '').trim();
+ if (!items.length && !free) return '';
+ const cls = appData.classes.find(c => c.name === x.className) || { color: '#64748b' };
+ return `
+ <div class="session-card" onclick="openSessionFullscreen('${x.id}')" style="border-left-color:${cls.color}; padding:1.25rem; margin-bottom:0.85rem;">
+ <div class="session-header"><div>
+ <span class="badge-class" style="background:${cls.color}">${esc(x.className)}</span>
+ <span class="time-text">⏱ ${esc(x.time)}</span>
+ </div></div>
+ <div style="font-weight:bold; font-size:1.1rem;">${esc(x.title)}</div>
+ ${items.map(l => { const b = formatRangeBadge(l); return `<div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap; font-size:1.15rem; margin-top:0.35rem;"><span>📝</span><span>${esc(l.text)}</span>${b ? `<span class="badge-subitems">${b}</span>` : ''}</div>`; }).join('')}
+ ${free ? `<div style="font-size:1.05rem; background:#fffbeb; padding:0.35rem 0.75rem; border-radius:0.25rem; color:#92400e; white-space:pre-line; margin-top:0.5rem;">📚 ${esc(free)}</div>` : ''}
+ </div>`;
+ }).join('');
+ document.getElementById('homework-list').innerHTML = html || '<div class="card" style="text-align:center; color:var(--text-muted);">Aucun devoir ce jour.</div>';
+ }
+
  function changeAgendaDate(days) {
  const curr = parseDate(selectedAgendaDate);
  curr.setDate(curr.getDate() + (agendaViewMode === 'week' ? days * 7 : days));
@@ -1462,7 +1507,7 @@
  return `
  <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
  <span style="color:${l.checked ? '#059669' : 'var(--text-muted)'}; font-weight:bold;">${l.checked ? '✓' : '•'}</span>
- <span style="${l.checked ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${esc(l.text)}</span>
+ <span style="${l.checked ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${esc(l.text)}${l.homework ? ' 📝' : ''}</span>
  ${rangeBadge ? `<span class="badge-subitems">${rangeBadge}</span>` : ''}
  </div>
  `;
@@ -2037,6 +2082,9 @@ const contentContainer = document.getElementById('fs-session-content');
  <span style="${l.checked ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${esc(l.text)}</span>
  ${previewList ? `<span class="badge-subitems">- ${previewList}</span>` : ''}
  </label>
+ <label style="display:flex; align-items:center; gap:0.35rem; flex-shrink:0; cursor:pointer; font-size:0.95rem; font-weight:600; color:${l.homework ? '#b45309' : 'var(--text-muted)'};" title="Marquer comme devoir à faire">
+ <input type="checkbox" ${l.homework ? 'checked' : ''} onchange="toggleFullscreenLineHomework('${s.id}', ${idx}, this.checked)" style="width:22px; height:22px; flex-shrink:0;">Devoir
+ </label>
  <div style="display:flex; align-items:center; gap:0.4rem; flex-shrink:0;" title="Sélectionner la plage de questions réalisées">
  <span style="font-size:0.9rem; color:var(--text-muted); font-weight:600;">De</span>
  <select class="range-select-compact" onchange="updateFullscreenLineRange('${s.id}', ${idx}, 'start', this.value)">
@@ -2066,6 +2114,15 @@ const contentContainer = document.getElementById('fs-session-content');
  const session = appData.sessions.find(s => s.id === sessionId);
  if (session && session.lines && session.lines[lineIndex]) {
  session.lines[lineIndex].checked = isChecked;
+ saveData();
+ openSessionFullscreen(sessionId);
+ }
+ }
+
+ function toggleFullscreenLineHomework(sessionId, lineIndex, isChecked) {
+ const session = appData.sessions.find(x => x.id === sessionId);
+ if (session && session.lines && session.lines[lineIndex]) {
+ session.lines[lineIndex].homework = isChecked;
  saveData();
  openSessionFullscreen(sessionId);
  }
